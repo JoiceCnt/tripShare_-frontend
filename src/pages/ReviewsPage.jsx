@@ -1,4 +1,3 @@
-// src/pages/ReviewsPage.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -31,18 +30,9 @@ export default function ReviewsPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!selectedCountry) return;
-    axios
-      .get(`${API_URL}/destinations/countries/${selectedCountry}/cities`)
-      .then((res) => setCities(res.data))
-      .catch((err) => console.error("Error fetching cities:", err));
-  }, [selectedCountry]);
-
-  // ================= REVIEWS CRUD =================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newReview.destinationCode || !newReview.text) return;
+    if (!newReview.country || !newReview.text) return;
 
     try {
       const res = await axios.post(`${API_URL}/reviews`, {
@@ -54,7 +44,7 @@ export default function ReviewsPage() {
       setNewReview({ country: "", text: "" });
       fetchData();
     } catch (err) {
-      console.error("Error saving review:", err);
+      console.error("Error creating review:", err);
     }
   };
 
@@ -102,39 +92,19 @@ export default function ReviewsPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        {/* Country */}
         <select
-          value={newReview.destinationCode}
-          onChange={(e) => {
-            setSelectedCountry(e.target.value);
-            setNewReview({ ...newReview, destinationCode: e.target.value });
-          }}
+          value={newReview.country}
+          onChange={(e) =>
+            setNewReview({ ...newReview, country: e.target.value })
+          }
         >
           <option value="">Select a country</option>
           {countries.map((c) => (
-            <option key={c.iso2} value={c.iso2}>
+            <option key={c.iso2} value={c.name}>
               {c.name}
             </option>
           ))}
         </select>
-
-        {/* City */}
-        {cities.length > 0 && (
-          <select
-            value={newReview.city}
-            onChange={(e) =>
-              setNewReview({ ...newReview, city: e.target.value })
-            }
-            style={{ marginLeft: "10px" }}
-          >
-            <option value="">Select a city</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        )}
 
         <textarea
           placeholder="Write your review"
@@ -143,46 +113,8 @@ export default function ReviewsPage() {
           style={{ marginLeft: "10px" }}
         />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setNewReview({ ...newReview, image: e.target.files[0] })
-          }
-          style={{ marginLeft: "10px" }}
-        />
-
-        {/* Ratings */}
-        <div style={{ marginTop: "15px" }}>
-          {Object.keys(newReview.ratings).map((cat) => (
-            <div key={cat} style={{ marginBottom: "5px" }}>
-              <label style={{ marginRight: "10px" }}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}:
-              </label>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  style={{
-                    cursor: "pointer",
-                    color:
-                      newReview.ratings[cat] >= star ? "gold" : "lightgray",
-                  }}
-                  onClick={() =>
-                    setNewReview({
-                      ...newReview,
-                      ratings: { ...newReview.ratings, [cat]: star },
-                    })
-                  }
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <button type="submit" style={{ marginTop: "10px" }}>
-          {editingId ? "Update Review" : "Submit Review"}
+        <button type="submit" style={{ marginLeft: "10px" }}>
+          Submit Review
         </button>
       </form>
 
