@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import ReviewsPage from "./pages/ReviewsPage";
 import DestinationsPage from "./pages/DestinationsPage";
+import SignUpPage from "./pages/SignUpPage";
 
 function App() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ function App() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
       </Routes>
     </>
   );

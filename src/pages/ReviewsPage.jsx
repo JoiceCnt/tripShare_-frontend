@@ -25,10 +25,12 @@ export default function ReviewsPage() {
       safety: 0,
     },
   });
-
   const [editingId, setEditingId] = useState(null);
 
-  // Fetch reviews + countries
+  // 👉 estado para novos comentários
+  const [newComment, setNewComment] = useState({});
+
+  // ================= FETCH DATA =================
   useEffect(() => {
     axios
       .get(`${API_URL}/reviews`)
@@ -41,7 +43,6 @@ export default function ReviewsPage() {
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
-  // Fetch cities for selected country
   useEffect(() => {
     if (!selectedCountry) return;
     axios
@@ -50,7 +51,7 @@ export default function ReviewsPage() {
       .catch((err) => console.error("Error fetching cities:", err));
   }, [selectedCountry]);
 
-  // Handle form submit (create or update)
+  // ================= REVIEWS CRUD =================
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newReview.destinationCode || !newReview.text) return;
@@ -64,10 +65,15 @@ export default function ReviewsPage() {
         formData.append("image", newReview.image);
       }
 
+      const token = localStorage.getItem("authToken"); // 👈 pega token
+
       let res;
       if (editingId) {
         res = await axios.put(`${API_URL}/reviews/${editingId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // 👈 manda token
+          },
         });
         setReviews(reviews.map((r) => (r._id === editingId ? res.data : r)));
         setEditingId(null);
@@ -76,7 +82,10 @@ export default function ReviewsPage() {
           `${API_URL}/reviews/${newReview.destinationCode}`,
           formData,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`, // 👈 manda token
+            },
           }
         );
         setReviews([...reviews, res.data]);
@@ -105,17 +114,18 @@ export default function ReviewsPage() {
     }
   };
 
-  // Handle delete
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/reviews/${id}`);
+      const token = localStorage.getItem("authToken");
+      await axios.delete(`${API_URL}/reviews/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setReviews(reviews.filter((r) => r._id !== id));
     } catch (err) {
       console.error("Error deleting review:", err);
     }
   };
 
-  // Handle edit
   const handleEdit = (review) => {
     setEditingId(review._id);
     setSelectedCountry(review.destinationCode);
@@ -137,6 +147,41 @@ export default function ReviewsPage() {
     });
   };
 
+  // ================= COMMENTS CRUD =================
+  const handleAddComment = async (reviewId) => {
+    if (!newComment[reviewId]) return;
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await axios.post(
+        `${API_URL}/reviews/${reviewId}/comments`,
+        { text: newComment[reviewId] },
+        {
+          headers: { Authorization: `Bearer ${token}` }, // 👈 manda token
+        }
+      );
+      setReviews(reviews.map((r) => (r._id === reviewId ? res.data : r)));
+      setNewComment({ ...newComment, [reviewId]: "" });
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  const handleDeleteComment = async (reviewId, commentId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await axios.delete(
+        `${API_URL}/reviews/${reviewId}/comments/${commentId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setReviews(reviews.map((r) => (r._id === reviewId ? res.data : r)));
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
+
+  // ================= RENDER =================
   return (
     <div style={{ padding: "20px" }}>
       <h1>Reviews</h1>
@@ -239,10 +284,24 @@ export default function ReviewsPage() {
             return (
               <li key={rev._id} style={{ marginBottom: "20px" }}>
                 <strong>
+                  {rev.user?.name || "Anônimo"} escreveu em{" "}
                   {country ? country.name : rev.destinationCode},{" "}
                   {rev.city || "Unknown city"}:
                 </strong>{" "}
                 {rev.text}
+                {/* Data de publicação */}
+                <div
+                  style={{ fontSize: "12px", color: "gray", marginTop: "4px" }}
+                >
+                  📅 Publicado em:{" "}
+                  {new Date(rev.createdAt).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
                 {rev.imageUrl && (
                   <div>
                     <img
@@ -257,7 +316,7 @@ export default function ReviewsPage() {
                   {rev.ratings && (
                     <div style={{ marginTop: "10px" }}>
                       {Object.entries(rev.ratings)
-                        .filter(([, value]) => Number(value) > 0) // 👈 ignora a chave, pega só o valor
+                        .filter(([, value]) => Number(value) > 0)
                         .map(([key, value]) => (
                           <div key={key}>
                             {key.charAt(0).toUpperCase() + key.slice(1)}:{" "}
@@ -268,6 +327,54 @@ export default function ReviewsPage() {
                         ))}
                     </div>
                   )}
+                </div>
+                {/* Comentários */}
+                <div style={{ marginTop: "15px", paddingLeft: "10px" }}>
+                  <h4>Comentários:</h4>
+                  {rev.comments?.length === 0 && <p>Sem comentários ainda.</p>}
+                  <ul>
+                    {rev.comments?.map((c) => (
+                      <li key={c._id}>
+                        <strong>{c.user?.name || "Anônimo"}:</strong> {c.text}{" "}
+                        <span style={{ fontSize: "12px", color: "gray" }}>
+                          ({new Date(c.createdAt).toLocaleDateString("pt-BR")})
+                        </span>
+                        <button
+                          style={{
+                            marginLeft: "10px",
+                            color: "red",
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleDeleteComment(rev._id, c._id)}
+                        >
+                          🗑️
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Novo comentário */}
+                  <div style={{ marginTop: "10px" }}>
+                    <input
+                      type="text"
+                      placeholder="Escreva um comentário..."
+                      value={newComment[rev._id] || ""}
+                      onChange={(e) =>
+                        setNewComment({
+                          ...newComment,
+                          [rev._id]: e.target.value,
+                        })
+                      }
+                    />
+                    <button
+                      onClick={() => handleAddComment(rev._id)}
+                      style={{ marginLeft: "5px" }}
+                    >
+                      Comentar
+                    </button>
+                  </div>
                 </div>
                 <button onClick={() => handleEdit(rev)}>Edit</button>
                 <button

@@ -1,39 +1,38 @@
-// src/components/TripShareNavbar.jsx
-import { NavLink } from "react-router-dom";
+// src/components/Navbar.jsx
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-export default function TripShareNavbar({ isLoggedIn, onLogout }) {
+export default function Navbar() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // carregar usuário logado (simples: nome salvo no localStorage)
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) setUser(JSON.parse(savedUser));
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // remove JWT
+    localStorage.removeItem("user"); // remove user
+    setUser(null);
+    navigate("/login"); // redireciona para login
+  };
+
   return (
-    <nav style={{ padding: "10px", background: "#8BAAAD" }}>
-      <NavLink to="/">Home</NavLink>
-      {" | "}
-      <NavLink to="/destinations">Destinations</NavLink>
-      {" | "}
-      <NavLink to="/reviews">Reviews</NavLink>
-      {" | "}
-
-      {isLoggedIn ? (
+    <nav style={{ background: "#90a4ae", padding: "10px" }}>
+      <Link to="/">Home</Link> | <Link to="/destinations">Destinations</Link> |{" "}
+      <Link to="/reviews">Reviews</Link> |{" "}
+      {!user ? (
         <>
-          <button
-            onClick={onLogout}
-            style={{
-              marginLeft: "10px",
-              background: "red",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              cursor: "pointer",
-            }}
-          >
-            Logout
-          </button>
-          {" | "}
-          <NavLink to="/profile">Profile</NavLink>
+          <Link to="/login">Login</Link> | <Link to="/signup">Sign Up</Link>
         </>
       ) : (
         <>
-          <NavLink to="/login">Login</NavLink>
-          {" | "}
-          <NavLink to="/signup">Sign Up</NavLink>
+          <span style={{ fontWeight: "bold" }}>Olá, {user.name}</span> |{" "}
+          <button onClick={handleLogout} style={{ cursor: "pointer" }}>
+            Logout
+          </button>
         </>
       )}
     </nav>

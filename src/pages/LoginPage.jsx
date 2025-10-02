@@ -1,10 +1,12 @@
 // src/pages/LoginPage.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 👈 importar
 import axios from "axios";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
+  const navigate = useNavigate(); // 👈 hook para navegar
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,10 +19,16 @@ export default function LoginPage() {
         "http://localhost:5005/api/auth/login",
         form
       );
-      localStorage.setItem("token", res.data.token); // guarda token para requests
+
+      // guarda token no localStorage
+      localStorage.setItem("authToken", res.data.token);
+
       setMessage("✅ Login realizado!");
+
+      // redireciona para HomePage
+      navigate("/");
     } catch (err) {
-      setMessage("❌ Erro no login: " + err.response.data.error);
+      setMessage("❌ Erro no login: " + (err.response?.data?.error || "Erro"));
     }
   };
 
@@ -28,11 +36,17 @@ export default function LoginPage() {
     <div>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <input name="email" placeholder="Email" onChange={handleChange} />
+        <input
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
         <input
           name="password"
           type="password"
           placeholder="Password"
+          value={form.password}
           onChange={handleChange}
         />
         <button type="submit">Entrar</button>
