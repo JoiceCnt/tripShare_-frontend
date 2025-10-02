@@ -11,12 +11,14 @@ export default function DestinationDetailPage() {
 
   useEffect(() => {
     // busca o destino pelo id
-    axios.get(`http://localhost:5005/api/destinations/${id}`).then((res) => {
-      setDestination(res.data);
-    });
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/destinations/${id}`)
+      .then((res) => {
+        setDestination(res.data);
+      });
 
     // busca as reviews desse destino
-    axios.get(`http://localhost:5005/api/reviews/${id}`).then((res) => {
+    axios.get(`${import.meta.env.VITE_API_URL}`).then((res) => {
       setReviews(res.data);
     });
   }, [id]);
@@ -26,15 +28,13 @@ export default function DestinationDetailPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:5005/api/reviews/${id}`,
+        `${import.meta.env.VITE_API_URL}`,
         { text },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setText("");
       // recarregar reviews
-      const updated = await axios.get(
-        `http://localhost:5005/api/reviews/${id}`
-      );
+      const updated = await axios.get(`${import.meta.env.VITE_API_URL}`);
       setReviews(updated.data);
     } catch (err) {
       console.log(err);
