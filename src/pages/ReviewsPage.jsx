@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./ReviewsPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// função helper para headers de auth
 function authHeaders() {
   const token = localStorage.getItem("authToken");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -14,34 +14,38 @@ export default function ReviewsPage() {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState("");
 
   const [newReview, setNewReview] = useState({
     country: "",
     city: "",
     text: "",
+    ratings: {
+      gastronomy: 0,
+      events: 0,
+      petFriendly: 0,
+      kidsFriendly: 0,
+      culture: 0,
+      nature: 0,
+      shopping: 0,
+      safety: 0,
+    },
   });
 
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState("");
-  const [message, setMessage] = useState("");
+  const loggedUser = localStorage.getItem("username"); // assume que salvou username no login
 
   // Fetch reviews + countries
-  const fetchData = async () => {
-    try {
-      const reviewsRes = await axios.get(`${API_URL}/reviews`, {
-        headers: authHeaders(),
-      });
-      setReviews(reviewsRes.data);
-
-      const countriesRes = await axios.get(`${API_URL}/destinations/countries`);
-      setCountries(countriesRes.data);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    axios
+      .get(`${API_URL}/reviews`, { headers: authHeaders() })
+      .then((res) => setReviews(res.data))
+      .catch((err) => console.error("Error fetching reviews:", err));
+
+    axios
+      .get(`${API_URL}/destinations/countries`)
+      .then((res) => setCountries(res.data))
+      .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
   // Fetch cities when country changes
@@ -50,7 +54,6 @@ export default function ReviewsPage() {
       setCities([]);
       return;
     }
-
     setLoadingCities(true);
     axios
       .get(`${API_URL}/destinations/countries/${newReview.country}/cities`)
@@ -59,18 +62,59 @@ export default function ReviewsPage() {
       .finally(() => setLoadingCities(false));
   }, [newReview.country]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleRating = (category, value) => {
+    setNewReview((prev) => ({
+      ...prev,
+      ratings: { ...prev.ratings, [category]: value },
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newReview.country || !newReview.city || !newReview.text) return;
 
     try {
-      const res = await axios.post(`${API_URL}/reviews`, newReview, {
+      let imageUrl = "";
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        formData.append("upload_preset", "your_upload_preset"); // configure no Cloudinary
+        const uploadRes = await axios.post(
+          `https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`,
+          formData
+        );
+        imageUrl = uploadRes.data.secure_url;
+      }
+
+      const reviewData = { ...newReview, image: imageUrl, user: loggedUser };
+
+      const res = await axios.post(`${API_URL}/reviews`, reviewData, {
         headers: authHeaders(),
       });
-      setMessage("Review created successfully!");
       setReviews([res.data, ...reviews]);
-      setNewReview({ country: "", city: "", text: "" });
-      fetchData();
+      setNewReview({
+        country: "",
+        city: "",
+        text: "",
+        ratings: {
+          gastronomy: 0,
+          events: 0,
+          petFriendly: 0,
+          kidsFriendly: 0,
+          culture: 0,
+          nature: 0,
+          shopping: 0,
+          safety: 0,
+        },
+      });
+      setImageFile(null);
+      setPreview("");
     } catch (err) {
       console.error("Error creating review:", err);
     }
@@ -81,50 +125,32 @@ export default function ReviewsPage() {
       await axios.delete(`${API_URL}/reviews/${id}`, {
         headers: authHeaders(),
       });
-      setMessage("Review deleted successfully!");
-      fetchData();
+      setReviews(reviews.filter((r) => r._id !== id));
     } catch (err) {
       console.error("Error deleting review:", err);
     }
   };
 
-  const handleEdit = (id, text) => {
-    setEditingId(id);
-    setEditingText(text);
-  };
-
-  const handleSave = async (id) => {
-    try {
-      await axios.put(
-        `${API_URL}/reviews/${id}`,
-        { text: editingText },
-        { headers: authHeaders() }
-      );
-      setMessage("Review updated successfully!");
-      setEditingId(null);
-      setEditingText("");
-      fetchData();
-    } catch (err) {
-      console.error("Error updating review:", err);
-    }
-  };
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Reviews</h1>
-
-      {message && <p style={{ color: "green" }}>{message}</p>}
+    <div className="reviews-container">
+      <h1 className="title">Reviews</h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        {/* Select Country */}
+      <form onSubmit={handleSubmit} className="review-form">
+        <div className="upload-box">
+          <input type="file" onChange={handleImageChange} />
+          {preview && (
+            <img src={preview} alt="preview" className="preview-img" />
+          )}
+        </div>
+
         <select
           value={newReview.country}
           onChange={(e) =>
             setNewReview({ ...newReview, country: e.target.value, city: "" })
           }
         >
-          <option value="">Select a country</option>
+          <option value="">Country</option>
           {countries.map((c) => (
             <option key={c.iso2} value={c.iso2}>
               {c.name}
@@ -132,7 +158,7 @@ export default function ReviewsPage() {
           ))}
         </select>
 
-        {/* Select City */}
+        {/* Select City com loading */}
         {loadingCities ? (
           <span style={{ marginLeft: "10px" }}>Loading cities...</span>
         ) : (
@@ -144,7 +170,7 @@ export default function ReviewsPage() {
             disabled={!cities.length}
             style={{ marginLeft: "10px" }}
           >
-            <option value="">Select a city</option>
+            <option value="">City</option>
             {cities.map((city) => (
               <option key={city.id} value={city.name}>
                 {city.name}
@@ -153,61 +179,66 @@ export default function ReviewsPage() {
           </select>
         )}
 
-        {/* Review Text */}
         <textarea
-          placeholder="Write your review"
+          placeholder="Write about your experience"
           value={newReview.text}
           onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
-          style={{ marginLeft: "10px" }}
         />
 
-        <button type="submit" style={{ marginLeft: "10px" }}>
-          Submit Review
+        {/* Ratings */}
+        <div className="ratings-box">
+          {Object.keys(newReview.ratings).map((cat) => (
+            <div key={cat} className="rating-row">
+              <span>{cat}</span>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span
+                  key={n}
+                  className={
+                    newReview.ratings[cat] >= n ? "star filled" : "star"
+                  }
+                  onClick={() => handleRating(cat, n)}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="share-btn">
+          Share
         </button>
       </form>
 
       {/* Reviews list */}
-      {reviews.length === 0 ? (
-        <p>No reviews yet.</p>
-      ) : (
-        <ul>
-          {reviews.map((rev) => (
-            <li key={rev._id}>
+      <ul className="reviews-list">
+        {reviews.map((rev) => (
+          <li key={rev._id} className="review-card">
+            {rev.image && (
+              <img src={rev.image} alt="review" className="review-img" />
+            )}
+            <div>
               <strong>
-                {rev.country} - {rev.city}:
-              </strong>{" "}
-              {editingId === rev._id ? (
-                <>
-                  <textarea
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                  />
-                  <button onClick={() => handleSave(rev._id)}>Save</button>
-                  <button onClick={() => setEditingId(null)}>Cancel</button>
-                </>
-              ) : (
-                <>
-                  {rev.text}{" "}
-                  <em style={{ color: "gray", fontSize: "12px" }}>
-                    ({new Date(rev.createdAt).toLocaleDateString()})
-                  </em>
-                  {/* botões só aparecem se backend retornar userId = dono */}
-                  {rev.isOwner && (
-                    <>
-                      <button onClick={() => handleEdit(rev._id, rev.text)}>
-                        Edit
-                      </button>
-                      <button onClick={() => handleDelete(rev._id)}>
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </>
+                {rev.country} - {rev.city}
+              </strong>
+              <p>{rev.text}</p>
+              <div className="ratings-inline">
+                {Object.entries(rev.ratings).map(([cat, val]) => (
+                  <span key={cat}>
+                    {cat}: {"★".repeat(val)}
+                  </span>
+                ))}
+              </div>
+              {rev.user === loggedUser && (
+                <div className="actions">
+                  <button onClick={() => alert("Edit here")}>Edit</button>
+                  <button onClick={() => handleDelete(rev._id)}>Delete</button>
+                </div>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
