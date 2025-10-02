@@ -7,40 +7,28 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [countries, setCountries] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [newReview, setNewReview] = useState({
-    destinationCode: "",
-    city: "",
-    text: "",
-    image: null,
-    ratings: {
-      gastronomy: 0,
-      events: 0,
-      petFriendly: 0,
-      kidsFriendly: 0,
-      culture: 0,
-      nature: 0,
-      shopping: 0,
-      safety: 0,
-    },
-  });
+  const [newReview, setNewReview] = useState({ country: "", text: "" });
   const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [message, setMessage] = useState("");
 
-  // 👉 estado para novos comentários
-  const [newComment, setNewComment] = useState({});
+  // Mock user (replace with real auth later)
+  const currentUser = "john_doe"; // Example username
 
-  // ================= FETCH DATA =================
+  // Fetch reviews + countries
+  const fetchData = async () => {
+    try {
+      const reviewsRes = await axios.get(`${API_URL}/reviews`);
+      setReviews(reviewsRes.data);
+      const countriesRes = await axios.get(`${API_URL}/destinations/countries`);
+      setCountries(countriesRes.data);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(`${API_URL}/reviews`)
-      .then((res) => setReviews(res.data))
-      .catch((err) => console.error("Error fetching reviews:", err));
-
-    axios
-      .get(`${API_URL}/destinations/countries`)
-      .then((res) => setCountries(res.data))
-      .catch((err) => console.error("Error fetching countries:", err));
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -57,134 +45,60 @@ export default function ReviewsPage() {
     if (!newReview.destinationCode || !newReview.text) return;
 
     try {
-      const formData = new FormData();
-      formData.append("text", newReview.text);
-      formData.append("city", newReview.city);
-      formData.append("ratings", JSON.stringify(newReview.ratings));
-      if (newReview.image) {
-        formData.append("image", newReview.image);
-      }
-
-      const token = localStorage.getItem("authToken"); // 👈 pega token
-
-      let res;
-      if (editingId) {
-        res = await axios.put(`${API_URL}/reviews/${editingId}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // 👈 manda token
-          },
-        });
-        setReviews(reviews.map((r) => (r._id === editingId ? res.data : r)));
-        setEditingId(null);
-      } else {
-        res = await axios.post(
-          `${API_URL}/reviews/${newReview.destinationCode}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`, // 👈 manda token
-            },
-          }
-        );
-        setReviews([...reviews, res.data]);
-      }
-
-      setNewReview({
-        destinationCode: "",
-        city: "",
-        text: "",
-        image: null,
-        ratings: {
-          gastronomy: 0,
-          events: 0,
-          petFriendly: 0,
-          kidsFriendly: 0,
-          culture: 0,
-          nature: 0,
-          shopping: 0,
-          safety: 0,
-        },
+      const res = await axios.post(`${API_URL}/reviews`, {
+        ...newReview,
+        user: currentUser,
       });
-      setSelectedCountry("");
-      setCities([]);
+      setMessage("Review created successfully!");
+      setReviews([res.data, ...reviews]);
+      setNewReview({ country: "", text: "" });
+      fetchData();
     } catch (err) {
       console.error("Error saving review:", err);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, user) => {
+    if (user !== currentUser) {
+      alert("You can only delete your own reviews.");
+      return;
+    }
     try {
-      const token = localStorage.getItem("authToken");
-      await axios.delete(`${API_URL}/reviews/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setReviews(reviews.filter((r) => r._id !== id));
+      await axios.delete(`${API_URL}/reviews/${id}`);
+      setMessage("Review deleted successfully!");
+      fetchData();
     } catch (err) {
       console.error("Error deleting review:", err);
     }
   };
 
-  const handleEdit = (review) => {
-    setEditingId(review._id);
-    setSelectedCountry(review.destinationCode);
-    setNewReview({
-      destinationCode: review.destinationCode,
-      city: review.city || "",
-      text: review.text,
-      image: null,
-      ratings: review.ratings || {
-        gastronomy: 0,
-        events: 0,
-        petFriendly: 0,
-        kidsFriendly: 0,
-        culture: 0,
-        nature: 0,
-        shopping: 0,
-        safety: 0,
-      },
-    });
+  const handleEdit = (id, text) => {
+    setEditingId(id);
+    setEditingText(text);
   };
 
-  // ================= COMMENTS CRUD =================
-  const handleAddComment = async (reviewId) => {
-    if (!newComment[reviewId]) return;
+  const handleSave = async (id, user) => {
+    if (user !== currentUser) {
+      alert("You can only edit your own reviews.");
+      return;
+    }
     try {
-      const token = localStorage.getItem("authToken");
-      const res = await axios.post(
-        `${API_URL}/reviews/${reviewId}/comments`,
-        { text: newComment[reviewId] },
-        {
-          headers: { Authorization: `Bearer ${token}` }, // 👈 manda token
-        }
-      );
-      setReviews(reviews.map((r) => (r._id === reviewId ? res.data : r)));
-      setNewComment({ ...newComment, [reviewId]: "" });
+      await axios.put(`${API_URL}/reviews/${id}`, { text: editingText });
+      setMessage("Review updated successfully!");
+      setEditingId(null);
+      setEditingText("");
+      fetchData();
     } catch (err) {
-      console.error("Error adding comment:", err);
+      console.error("Error updating review:", err);
     }
   };
 
-  const handleDeleteComment = async (reviewId, commentId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const res = await axios.delete(
-        `${API_URL}/reviews/${reviewId}/comments/${commentId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setReviews(reviews.map((r) => (r._id === reviewId ? res.data : r)));
-    } catch (err) {
-      console.error("Error deleting comment:", err);
-    }
-  };
-
-  // ================= RENDER =================
   return (
     <div style={{ padding: "20px" }}>
       <h1>Reviews</h1>
+
+      {/* Confirmation message */}
+      {message && <p style={{ color: "green" }}>{message}</p>}
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
@@ -277,115 +191,40 @@ export default function ReviewsPage() {
         <p>No reviews yet.</p>
       ) : (
         <ul>
-          {reviews.map((rev) => {
-            const country = countries.find(
-              (c) => c.iso2 === rev.destinationCode
-            );
-            return (
-              <li key={rev._id} style={{ marginBottom: "20px" }}>
-                <strong>
-                  {rev.user?.name || "Anônimo"} escreveu em{" "}
-                  {country ? country.name : rev.destinationCode},{" "}
-                  {rev.city || "Unknown city"}:
-                </strong>{" "}
-                {rev.text}
-                {/* Data de publicação */}
-                <div
-                  style={{ fontSize: "12px", color: "gray", marginTop: "4px" }}
-                >
-                  📅 Publicado em:{" "}
-                  {new Date(rev.createdAt).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-                {rev.imageUrl && (
-                  <div>
-                    <img
-                      src={rev.imageUrl}
-                      alt="Review"
-                      style={{ width: "150px", marginTop: "5px" }}
-                    />
-                  </div>
-                )}
-                {/* Ratings */}
-                <div>
-                  {rev.ratings && (
-                    <div style={{ marginTop: "10px" }}>
-                      {Object.entries(rev.ratings)
-                        .filter(([, value]) => Number(value) > 0)
-                        .map(([key, value]) => (
-                          <div key={key}>
-                            {key.charAt(0).toUpperCase() + key.slice(1)}:{" "}
-                            {Array.from({ length: 5 }, (_, i) =>
-                              i < Number(value) ? "⭐" : "☆"
-                            ).join("")}
-                          </div>
-                        ))}
-                    </div>
+          {reviews.map((rev) => (
+            <li key={rev._id}>
+              <strong>{rev.country}:</strong>{" "}
+              {editingId === rev._id ? (
+                <>
+                  <textarea
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                  />
+                  <button onClick={() => handleSave(rev._id, rev.user)}>
+                    Save
+                  </button>
+                  <button onClick={() => setEditingId(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  {rev.text}{" "}
+                  <em style={{ color: "gray", fontSize: "12px" }}>
+                    ({new Date(rev.createdAt).toLocaleDateString()})
+                  </em>
+                  {rev.user === currentUser && (
+                    <>
+                      <button onClick={() => handleEdit(rev._id, rev.text)}>
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(rev._id, rev.user)}>
+                        Delete
+                      </button>
+                    </>
                   )}
-                </div>
-                {/* Comentários */}
-                <div style={{ marginTop: "15px", paddingLeft: "10px" }}>
-                  <h4>Comentários:</h4>
-                  {rev.comments?.length === 0 && <p>Sem comentários ainda.</p>}
-                  <ul>
-                    {rev.comments?.map((c) => (
-                      <li key={c._id}>
-                        <strong>{c.user?.name || "Anônimo"}:</strong> {c.text}{" "}
-                        <span style={{ fontSize: "12px", color: "gray" }}>
-                          ({new Date(c.createdAt).toLocaleDateString("pt-BR")})
-                        </span>
-                        <button
-                          style={{
-                            marginLeft: "10px",
-                            color: "red",
-                            border: "none",
-                            background: "transparent",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleDeleteComment(rev._id, c._id)}
-                        >
-                          🗑️
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Novo comentário */}
-                  <div style={{ marginTop: "10px" }}>
-                    <input
-                      type="text"
-                      placeholder="Escreva um comentário..."
-                      value={newComment[rev._id] || ""}
-                      onChange={(e) =>
-                        setNewComment({
-                          ...newComment,
-                          [rev._id]: e.target.value,
-                        })
-                      }
-                    />
-                    <button
-                      onClick={() => handleAddComment(rev._id)}
-                      style={{ marginLeft: "5px" }}
-                    >
-                      Comentar
-                    </button>
-                  </div>
-                </div>
-                <button onClick={() => handleEdit(rev)}>Edit</button>
-                <button
-                  onClick={() => handleDelete(rev._id)}
-                  style={{ marginLeft: "10px", color: "red" }}
-                >
-                  Delete
-                </button>
-              </li>
-            );
-          })}
+                </>
+              )}
+            </li>
+          ))}
         </ul>
       )}
     </div>
