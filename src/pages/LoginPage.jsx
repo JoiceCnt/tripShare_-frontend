@@ -15,12 +15,10 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        "http://localhost:5005/api/auth/login",
-        form
-      );
+      const API_URL = import.meta.env.VITE_API_URL; // pega a URL do .env
+      const res = await axios.post(`${API_URL}/auth/login`, form);
 
-      // guarda token no localStorage
+      // se precisar salvar o token, por exemplo:
       localStorage.setItem("authToken", res.data.token);
 
       setMessage("✅ Login realizado!");
