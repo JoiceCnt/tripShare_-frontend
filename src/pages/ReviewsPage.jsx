@@ -7,9 +7,26 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [countries, setCountries] = useState([]);
-  const [newReview, setNewReview] = useState({ destinationCode: "", text: "" });
-  const [editingReview, setEditingReview] = useState(null); // holds the review being edited
-  const [editText, setEditText] = useState("");
+  const [cities, setCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [newReview, setNewReview] = useState({
+    destinationCode: "",
+    city: "",
+    text: "",
+    image: null,
+    ratings: {
+      gastronomy: 0,
+      events: 0,
+      petFriendly: 0,
+      kidsFriendly: 0,
+      culture: 0,
+      nature: 0,
+      shopping: 0,
+      safety: 0,
+    },
+  });
+
+  const [editingId, setEditingId] = useState(null);
 
   // Fetch reviews + countries
   useEffect(() => {
@@ -24,70 +41,115 @@ export default function ReviewsPage() {
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
-  // Create a new review
+  // Fetch cities for selected country
+  useEffect(() => {
+    if (!selectedCountry) return;
+    axios
+      .get(`${API_URL}/destinations/countries/${selectedCountry}/cities`)
+      .then((res) => setCities(res.data))
+      .catch((err) => console.error("Error fetching cities:", err));
+  }, [selectedCountry]);
+
+  // Handle form submit (create or update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newReview.destinationCode || !newReview.text) return;
 
     try {
-      const res = await axios.post(
-        `${API_URL}/reviews/${newReview.destinationCode}`,
-        { text: newReview.text }
-      );
-      setReviews([...reviews, res.data]);
-      setNewReview({ destinationCode: "", text: "" });
-    } catch (err) {
-      console.error("Error creating review:", err);
-    }
-  };
+      const formData = new FormData();
+      formData.append("text", newReview.text);
+      formData.append("city", newReview.city);
+      formData.append("ratings", JSON.stringify(newReview.ratings));
+      if (newReview.image) {
+        formData.append("image", newReview.image);
+      }
 
-  // Start editing a review
-  const handleEdit = (review) => {
-    setEditingReview(review._id);
-    setEditText(review.text);
-  };
+      let res;
+      if (editingId) {
+        res = await axios.put(`${API_URL}/reviews/${editingId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setReviews(reviews.map((r) => (r._id === editingId ? res.data : r)));
+        setEditingId(null);
+      } else {
+        res = await axios.post(
+          `${API_URL}/reviews/${newReview.destinationCode}`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+        setReviews([...reviews, res.data]);
+      }
 
-  // Save the updated review
-  const handleSaveEdit = async (id) => {
-    try {
-      const res = await axios.put(`${API_URL}/reviews/${id}`, {
-        text: editText,
+      setNewReview({
+        destinationCode: "",
+        city: "",
+        text: "",
+        image: null,
+        ratings: {
+          gastronomy: 0,
+          events: 0,
+          petFriendly: 0,
+          kidsFriendly: 0,
+          culture: 0,
+          nature: 0,
+          shopping: 0,
+          safety: 0,
+        },
       });
-      setReviews(reviews.map((rev) => (rev._id === id ? res.data : rev)));
-      setEditingReview(null);
-      setEditText("");
+      setSelectedCountry("");
+      setCities([]);
     } catch (err) {
-      console.error("Error updating review:", err);
+      console.error("Error saving review:", err);
     }
   };
 
-  // Cancel edit mode
-  const handleCancelEdit = () => {
-    setEditingReview(null);
-    setEditText("");
-  };
-
-  // Delete a review
+  // Handle delete
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${API_URL}/reviews/${id}`);
-      setReviews(reviews.filter((rev) => rev._id !== id));
+      setReviews(reviews.filter((r) => r._id !== id));
     } catch (err) {
       console.error("Error deleting review:", err);
     }
+  };
+
+  // Handle edit
+  const handleEdit = (review) => {
+    setEditingId(review._id);
+    setSelectedCountry(review.destinationCode);
+    setNewReview({
+      destinationCode: review.destinationCode,
+      city: review.city || "",
+      text: review.text,
+      image: null,
+      ratings: review.ratings || {
+        gastronomy: 0,
+        events: 0,
+        petFriendly: 0,
+        kidsFriendly: 0,
+        culture: 0,
+        nature: 0,
+        shopping: 0,
+        safety: 0,
+      },
+    });
   };
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>Reviews</h1>
 
-      {/* Form to add a new review */}
+      {/* Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+        {/* Country */}
         <select
           value={newReview.destinationCode}
-          onChange={(e) =>
-            setNewReview({ ...newReview, destinationCode: e.target.value })
-          }
+          onChange={(e) => {
+            setSelectedCountry(e.target.value);
+            setNewReview({ ...newReview, destinationCode: e.target.value });
+          }}
         >
           <option value="">Select a country</option>
           {countries.map((c) => (
@@ -97,6 +159,24 @@ export default function ReviewsPage() {
           ))}
         </select>
 
+        {/* City */}
+        {cities.length > 0 && (
+          <select
+            value={newReview.city}
+            onChange={(e) =>
+              setNewReview({ ...newReview, city: e.target.value })
+            }
+            style={{ marginLeft: "10px" }}
+          >
+            <option value="">Select a city</option>
+            {cities.map((city) => (
+              <option key={city.id} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         <textarea
           placeholder="Write your review"
           value={newReview.text}
@@ -104,8 +184,46 @@ export default function ReviewsPage() {
           style={{ marginLeft: "10px" }}
         />
 
-        <button type="submit" style={{ marginLeft: "10px" }}>
-          Submit Review
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setNewReview({ ...newReview, image: e.target.files[0] })
+          }
+          style={{ marginLeft: "10px" }}
+        />
+
+        {/* Ratings */}
+        <div style={{ marginTop: "15px" }}>
+          {Object.keys(newReview.ratings).map((cat) => (
+            <div key={cat} style={{ marginBottom: "5px" }}>
+              <label style={{ marginRight: "10px" }}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}:
+              </label>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  style={{
+                    cursor: "pointer",
+                    color:
+                      newReview.ratings[cat] >= star ? "gold" : "lightgray",
+                  }}
+                  onClick={() =>
+                    setNewReview({
+                      ...newReview,
+                      ratings: { ...newReview.ratings, [cat]: star },
+                    })
+                  }
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" style={{ marginTop: "10px" }}>
+          {editingId ? "Update Review" : "Submit Review"}
         </button>
       </form>
 
@@ -118,38 +236,46 @@ export default function ReviewsPage() {
             const country = countries.find(
               (c) => c.iso2 === rev.destinationCode
             );
-
             return (
-              <li key={rev._id} style={{ marginBottom: "10px" }}>
-                <strong>{country ? country.name : rev.destinationCode}:</strong>{" "}
-                {editingReview === rev._id ? (
-                  <>
-                    <textarea
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
+              <li key={rev._id} style={{ marginBottom: "20px" }}>
+                <strong>
+                  {country ? country.name : rev.destinationCode},{" "}
+                  {rev.city || "Unknown city"}:
+                </strong>{" "}
+                {rev.text}
+                {rev.imageUrl && (
+                  <div>
+                    <img
+                      src={rev.imageUrl}
+                      alt="Review"
+                      style={{ width: "150px", marginTop: "5px" }}
                     />
-                    <button onClick={() => handleSaveEdit(rev._id)}>
-                      Save
-                    </button>
-                    <button onClick={handleCancelEdit}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    {rev.text}
-                    <button
-                      onClick={() => handleEdit(rev)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(rev._id)}
-                      style={{ marginLeft: "5px", color: "red" }}
-                    >
-                      Delete
-                    </button>
-                  </>
+                  </div>
                 )}
+                {/* Ratings */}
+                <div>
+                  {rev.ratings && (
+                    <div style={{ marginTop: "10px" }}>
+                      {Object.entries(rev.ratings)
+                        .filter(([, value]) => Number(value) > 0) // 👈 ignora a chave, pega só o valor
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            {key.charAt(0).toUpperCase() + key.slice(1)}:{" "}
+                            {Array.from({ length: 5 }, (_, i) =>
+                              i < Number(value) ? "⭐" : "☆"
+                            ).join("")}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => handleEdit(rev)}>Edit</button>
+                <button
+                  onClick={() => handleDelete(rev._id)}
+                  style={{ marginLeft: "10px", color: "red" }}
+                >
+                  Delete
+                </button>
               </li>
             );
           })}

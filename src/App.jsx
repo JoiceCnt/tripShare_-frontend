@@ -1,28 +1,42 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import SignupPage from "./pages/SignUpPage";
+import { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import TripShareNavbar from "./components/TripShareNavbar";
 import LoginPage from "./pages/LoginPage";
-import DestinationsPage from "./pages/DestinationsPage";
+import HomePage from "./pages/HomePage";
 import ReviewsPage from "./pages/ReviewsPage";
+import DestinationsPage from "./pages/DestinationsPage";
 
 function App() {
-  return (
-    <Router>
-      <nav>
-        <Link to="/">Home</Link> |<Link to="/signup">Signup</Link> |
-        <Link to="/login">Login</Link> |<Link to="/destinations">Destinos</Link>{" "}
-        |<Link to="/reviews">Reviews</Link>
-      </nav>
+  const navigate = useNavigate();
 
+  // estado inicial: checa se já existe token salvo
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("authToken")
+  );
+
+  const handleLogin = (token) => {
+    localStorage.setItem("authToken", token);
+    setIsLoggedIn(true);
+    navigate("/"); // manda para Home
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    navigate("/login"); // volta pro login
+  };
+
+  return (
+    <>
+      <TripShareNavbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/destinations" element={<DestinationsPage />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/destinations" element={<DestinationsPage />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 
