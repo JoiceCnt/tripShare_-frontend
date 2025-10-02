@@ -1,25 +1,38 @@
-// src/pages/ReviewsPage.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// função helper para headers de auth
+function authHeaders() {
+  const token = localStorage.getItem("authToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [countries, setCountries] = useState([]);
-  const [newReview, setNewReview] = useState({ country: "", text: "" });
+  const [cities, setCities] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  const [newReview, setNewReview] = useState({
+    country: "",
+    city: "",
+    text: "",
+  });
+
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [message, setMessage] = useState("");
 
-  // Mock user (replace with real auth later)
-  const currentUser = "john_doe"; // Example username
-
   // Fetch reviews + countries
   const fetchData = async () => {
     try {
-      const reviewsRes = await axios.get(`${API_URL}/reviews`);
+      const reviewsRes = await axios.get(`${API_URL}/reviews`, {
+        headers: authHeaders(),
+      });
       setReviews(reviewsRes.data);
+
       const countriesRes = await axios.get(`${API_URL}/destinations/countries`);
       setCountries(countriesRes.data);
     } catch (err) {
@@ -31,40 +44,43 @@ export default function ReviewsPage() {
     fetchData();
   }, []);
 
+  // Fetch cities when country changes
   useEffect(() => {
-    if (!selectedCountry) return;
-    axios
-      .get(`${API_URL}/destinations/countries/${selectedCountry}/cities`)
-      .then((res) => setCities(res.data))
-      .catch((err) => console.error("Error fetching cities:", err));
-  }, [selectedCountry]);
+    if (!newReview.country) {
+      setCities([]);
+      return;
+    }
 
-  // ================= REVIEWS CRUD =================
+    setLoadingCities(true);
+    axios
+      .get(`${API_URL}/destinations/countries/${newReview.country}/cities`)
+      .then((res) => setCities(res.data))
+      .catch((err) => console.error("Error fetching cities:", err))
+      .finally(() => setLoadingCities(false));
+  }, [newReview.country]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newReview.destinationCode || !newReview.text) return;
+    if (!newReview.country || !newReview.city || !newReview.text) return;
 
     try {
-      const res = await axios.post(`${API_URL}/reviews`, {
-        ...newReview,
-        user: currentUser,
+      const res = await axios.post(`${API_URL}/reviews`, newReview, {
+        headers: authHeaders(),
       });
       setMessage("Review created successfully!");
       setReviews([res.data, ...reviews]);
-      setNewReview({ country: "", text: "" });
+      setNewReview({ country: "", city: "", text: "" });
       fetchData();
     } catch (err) {
-      console.error("Error saving review:", err);
+      console.error("Error creating review:", err);
     }
   };
 
-  const handleDelete = async (id, user) => {
-    if (user !== currentUser) {
-      alert("You can only delete your own reviews.");
-      return;
-    }
+  const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/reviews/${id}`);
+      await axios.delete(`${API_URL}/reviews/${id}`, {
+        headers: authHeaders(),
+      });
       setMessage("Review deleted successfully!");
       fetchData();
     } catch (err) {
@@ -77,13 +93,13 @@ export default function ReviewsPage() {
     setEditingText(text);
   };
 
-  const handleSave = async (id, user) => {
-    if (user !== currentUser) {
-      alert("You can only edit your own reviews.");
-      return;
-    }
+  const handleSave = async (id) => {
     try {
-      await axios.put(`${API_URL}/reviews/${id}`, { text: editingText });
+      await axios.put(
+        `${API_URL}/reviews/${id}`,
+        { text: editingText },
+        { headers: authHeaders() }
+      );
       setMessage("Review updated successfully!");
       setEditingId(null);
       setEditingText("");
@@ -97,18 +113,16 @@ export default function ReviewsPage() {
     <div style={{ padding: "20px" }}>
       <h1>Reviews</h1>
 
-      {/* Confirmation message */}
       {message && <p style={{ color: "green" }}>{message}</p>}
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        {/* Country */}
+        {/* Select Country */}
         <select
-          value={newReview.destinationCode}
-          onChange={(e) => {
-            setSelectedCountry(e.target.value);
-            setNewReview({ ...newReview, destinationCode: e.target.value });
-          }}
+          value={newReview.country}
+          onChange={(e) =>
+            setNewReview({ ...newReview, country: e.target.value, city: "" })
+          }
         >
           <option value="">Select a country</option>
           {countries.map((c) => (
@@ -118,13 +132,16 @@ export default function ReviewsPage() {
           ))}
         </select>
 
-        {/* City */}
-        {cities.length > 0 && (
+        {/* Select City */}
+        {loadingCities ? (
+          <span style={{ marginLeft: "10px" }}>Loading cities...</span>
+        ) : (
           <select
             value={newReview.city}
             onChange={(e) =>
               setNewReview({ ...newReview, city: e.target.value })
             }
+            disabled={!cities.length}
             style={{ marginLeft: "10px" }}
           >
             <option value="">Select a city</option>
@@ -136,6 +153,7 @@ export default function ReviewsPage() {
           </select>
         )}
 
+        {/* Review Text */}
         <textarea
           placeholder="Write your review"
           value={newReview.text}
@@ -143,46 +161,8 @@ export default function ReviewsPage() {
           style={{ marginLeft: "10px" }}
         />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setNewReview({ ...newReview, image: e.target.files[0] })
-          }
-          style={{ marginLeft: "10px" }}
-        />
-
-        {/* Ratings */}
-        <div style={{ marginTop: "15px" }}>
-          {Object.keys(newReview.ratings).map((cat) => (
-            <div key={cat} style={{ marginBottom: "5px" }}>
-              <label style={{ marginRight: "10px" }}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}:
-              </label>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  style={{
-                    cursor: "pointer",
-                    color:
-                      newReview.ratings[cat] >= star ? "gold" : "lightgray",
-                  }}
-                  onClick={() =>
-                    setNewReview({
-                      ...newReview,
-                      ratings: { ...newReview.ratings, [cat]: star },
-                    })
-                  }
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <button type="submit" style={{ marginTop: "10px" }}>
-          {editingId ? "Update Review" : "Submit Review"}
+        <button type="submit" style={{ marginLeft: "10px" }}>
+          Submit Review
         </button>
       </form>
 
@@ -193,16 +173,16 @@ export default function ReviewsPage() {
         <ul>
           {reviews.map((rev) => (
             <li key={rev._id}>
-              <strong>{rev.country}:</strong>{" "}
+              <strong>
+                {rev.country} - {rev.city}:
+              </strong>{" "}
               {editingId === rev._id ? (
                 <>
                   <textarea
                     value={editingText}
                     onChange={(e) => setEditingText(e.target.value)}
                   />
-                  <button onClick={() => handleSave(rev._id, rev.user)}>
-                    Save
-                  </button>
+                  <button onClick={() => handleSave(rev._id)}>Save</button>
                   <button onClick={() => setEditingId(null)}>Cancel</button>
                 </>
               ) : (
@@ -211,12 +191,13 @@ export default function ReviewsPage() {
                   <em style={{ color: "gray", fontSize: "12px" }}>
                     ({new Date(rev.createdAt).toLocaleDateString()})
                   </em>
-                  {rev.user === currentUser && (
+                  {/* botões só aparecem se backend retornar userId = dono */}
+                  {rev.isOwner && (
                     <>
                       <button onClick={() => handleEdit(rev._id, rev.text)}>
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(rev._id, rev.user)}>
+                      <button onClick={() => handleDelete(rev._id)}>
                         Delete
                       </button>
                     </>
