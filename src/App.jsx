@@ -7,6 +7,10 @@ import HomePage from "./pages/HomePage";
 import ReviewsPage from "./pages/ReviewsPage";
 import DestinationsPage from "./pages/DestinationsPage";
 import SignUpPage from "./pages/SignUpPage";
+import Footer from "./components/Footer";
+import PolicyPage from "./pages/PolicyPage";
+import AboutPage from "./pages/AboutPage";
+import ContactUsPage from "./pages/ContactUsPage";
 
 function App() {
   const navigate = useNavigate();
@@ -31,13 +35,19 @@ function App() {
   return (
     <>
       <TripShareNavbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/destinations" element={<DestinationsPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-      </Routes>
+      <div className="main-content">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/destinations" element={<DestinationsPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/policy" element={<PolicyPage />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </div>
+      <Footer />
     </>
   );
 }

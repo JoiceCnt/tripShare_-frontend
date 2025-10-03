@@ -1,0 +1,80 @@
+:root {
+  --primary: #1c3739;
+  --accent: #8baaad;
+  --light: #f5f5f5;
+  --card-bg: #ffffff;
+  --radius: 8px;
+}
+
+/* Container da página de auth */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 60px;
+}
+
+/* Título */
+.auth-title {
+  color: var(--primary);
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-family: "Gafata", sans-serif;
+}
+
+/* Formulário */
+.auth-form {
+  background: var(--card-bg);
+  padding: 30px 40px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 320px;
+}
+
+/* Inputs */
+.auth-input {
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--light);
+  font-family: "Gafata", sans-serif;
+  font-size: 15px;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Botão */
+.auth-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-family: "Gafata", sans-serif;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-btn:hover {
+  background: #0f2a2b;
+}
+
+/* Mensagem */
+.auth-message {
+  margin-top: 15px;
+  font-size: 14px;
+  color: var(--primary);
+  text-align: center;
+}
+.tm-icon-link svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--primary);
+}

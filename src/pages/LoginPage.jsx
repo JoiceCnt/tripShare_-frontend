@@ -17,6 +17,7 @@ export default function LoginPage() {
     try {
       const API_URL = import.meta.env.VITE_API_URL; // pega a URL do .env
       const res = await axios.post(`${API_URL}/auth/login`, form);
+      console.log("📩 Resposta do login:", res.data);
 
       // se precisar salvar o token, por exemplo:
       localStorage.setItem("authToken", res.data.token);
