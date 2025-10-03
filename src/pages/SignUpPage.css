@@ -1,0 +1,71 @@
+/* Container principal */
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #ffffff; /* fundo branco */
+}
+
+/* Título */
+.signup-title {
+  font-family: "Gafata", sans-serif;
+  font-size: 24px;
+  color: #1c3739;
+  margin-bottom: 20px;
+}
+
+/* Formulário */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Inputs */
+.signup-input {
+  width: 200px;
+  height: 30px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #1c3739;
+  background-color: #f5f5f5;
+  font-family: "Gafata", sans-serif;
+  font-size: 14px;
+  color: #1c3739;
+  outline: none;
+}
+
+.signup-input::placeholder {
+  color: #1c3739;
+  opacity: 0.6;
+}
+
+/* Botão */
+.signup-btn {
+  width: 120px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #1c3739;
+  background-color: #1c3739;
+  color: #ffffff;
+  font-family: "Gafata", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease-in-out;
+}
+
+.signup-btn:hover {
+  transform: scale(1.03);
+}
+
+/* Mensagem */
+.signup-message {
+  margin-top: 12px;
+  font-family: "Gafata", sans-serif;
+  font-size: 14px;
+  color: #1c3739;
+}

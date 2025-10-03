@@ -1,0 +1,61 @@
+:root {
+  --nav-h: 70px;
+  --nav-bg: #8baaad; /* cor da navbar */
+  --btn-bg: #1c3739; /* fundo dos botões */
+  --btn-color: #ffffff; /* texto */
+}
+
+/* Navbar container */
+.navbar {
+  height: var(--nav-h);
+  width: 100%;
+  background-color: var(--nav-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* espaço entre logo e menu */
+  padding: 0 40px;
+  font-family: "Gafata", sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo à esquerda */
+.navbar-logo {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--btn-color);
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Menu centralizado */
+.navbar-menu {
+  flex: 1; /* ocupa espaço para centralizar */
+  display: flex;
+  justify-content: center; /* centraliza horizontalmente */
+  gap: 20px;
+}
+
+/* Links estilizados como botões */
+.nav-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-color);
+  text-decoration: none;
+  padding: 6px 18px;
+  font-size: 15px;
+  font-family: "Gafata", sans-serif;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s, transform 0.1s;
+}
+
+.nav-btn:hover {
+  background-color: #0f2a2b;
+  transform: translateY(-1px);
+}
+
+/* Ativo (rota atual) */
+.nav-btn.active {
+  background-color: #e6e4db; /* cor da paleta para ativo */
+  color: #1c3739;
+}

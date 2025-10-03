@@ -1,7 +1,7 @@
-// src/pages/SignUpPage.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 importa o hook
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./SignUpPage.css"; // 👈 importa o css
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -12,7 +12,7 @@ export default function SignUpPage() {
     password: "",
   });
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // 👈 inicializa
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,30 +24,42 @@ export default function SignUpPage() {
       await axios.post(`${API_URL}/auth/register`, form);
       setMessage("✅ Usuário criado com sucesso!");
 
-      // 👇 redireciona para login após criar usuário
       setTimeout(() => {
         navigate("/login");
-      }, 1000); // espera 1 segundo para mostrar a mensagem
+      }, 1000);
     } catch (err) {
       setMessage("❌ Erro no signup: " + err.response?.data?.error);
     }
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="name" placeholder="Nome" onChange={handleChange} />
-        <input name="email" placeholder="Email" onChange={handleChange} />
+    <div className="signup-container">
+      <h2 className="signup-title">Sign Up</h2>
+      <form onSubmit={handleSubmit} className="signup-form">
+        <input
+          name="name"
+          placeholder="Nome"
+          onChange={handleChange}
+          className="signup-input"
+        />
+        <input
+          name="email"
+          placeholder="Email"
+          onChange={handleChange}
+          className="signup-input"
+        />
         <input
           type="password"
           name="password"
           placeholder="Senha"
           onChange={handleChange}
+          className="signup-input"
         />
-        <button type="submit">Criar conta</button>
+        <button type="submit" className="signup-btn">
+          Criar conta
+        </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="signup-message">{message}</p>}
     </div>
   );
 }

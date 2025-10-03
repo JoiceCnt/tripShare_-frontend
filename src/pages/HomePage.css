@@ -1,0 +1,19 @@
+.homepage {
+  margin-top: var(--nav-h, 75px); /* garante espaço da navbar */
+}
+
+/* container pequeno para o carrossel */
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* imagens pequenas tipo banner */
+.carousel-img {
+  width: 100%;
+  height: 200px; /* 👈 aqui você controla a altura (bem menor que antes) */
+  object-fit: cover; /* garante que a imagem preenche sem distorcer */
+  border-radius: 8px;
+}

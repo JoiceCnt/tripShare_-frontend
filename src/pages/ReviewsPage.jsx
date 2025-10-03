@@ -1,24 +1,13 @@
-import { useEffect, useState } from "react";
+// src/pages/ReviewsPage.jsx
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import "./ReviewsPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function authHeaders() {
-  const token = localStorage.getItem("authToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState("");
-
   const [newReview, setNewReview] = useState({
-    country: "",
+    destinationCode: "",
     city: "",
     text: "",
     ratings: {
@@ -32,74 +21,115 @@ export default function ReviewsPage() {
       safety: 0,
     },
   });
+  const [image, setImage] = useState(null);
+  const [editingReview, setEditingReview] = useState(null);
 
-  const loggedUser = localStorage.getItem("username"); // assume que salvou username no login
+  // ==== Países e Cidades ====
+  const CSC_API_URL = "https://api.countrystatecity.in/v1";
+  const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY;
+  const HEADERS = useMemo(
+    () => ({ "X-CSCAPI-KEY": CSC_API_KEY }),
+    [CSC_API_KEY]
+  );
 
-  // Fetch reviews + countries
+  const [countries, setCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+
   useEffect(() => {
     axios
-      .get(`${API_URL}/reviews`, { headers: authHeaders() })
-      .then((res) => setReviews(res.data))
-      .catch((err) => console.error("Error fetching reviews:", err));
-
-    axios
-      .get(`${API_URL}/destinations/countries`)
+      .get(`${CSC_API_URL}/countries`, { headers: HEADERS })
       .then((res) => setCountries(res.data))
-      .catch((err) => console.error("Error fetching countries:", err));
-  }, []);
+      .catch((err) => console.error("❌ Error fetching countries:", err));
+  }, [HEADERS]);
 
-  // Fetch cities when country changes
-  useEffect(() => {
-    if (!newReview.country) {
-      setCities([]);
-      return;
+  const handleCountryChange = async (e) => {
+    const code = e.target.value;
+    setNewReview({ ...newReview, destinationCode: code, city: "" });
+    try {
+      const res = await axios.get(`${CSC_API_URL}/countries/${code}/cities`, {
+        headers: HEADERS,
+      });
+      setCities(res.data);
+    } catch (err) {
+      console.error("❌ Error fetching cities:", err);
     }
-    setLoadingCities(true);
-    axios
-      .get(`${API_URL}/destinations/countries/${newReview.country}/cities`)
-      .then((res) => setCities(res.data))
-      .catch((err) => console.error("Error fetching cities:", err))
-      .finally(() => setLoadingCities(false));
-  }, [newReview.country]);
+  };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
-    setPreview(URL.createObjectURL(file));
+  // ==== Auth ====
+  const token = localStorage.getItem("authToken");
+  const currentUserId = localStorage.getItem("userId") || "";
+
+  // ==== GET Reviews ====
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/reviews`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setReviews(res.data))
+      .catch((err) => console.error("❌ Error loading reviews:", err));
+  }, [token]);
+
+  // ==== Handle inputs ====
+  const handleChange = (e) => {
+    setNewReview({ ...newReview, [e.target.name]: e.target.value });
   };
 
   const handleRating = (category, value) => {
-    setNewReview((prev) => ({
-      ...prev,
-      ratings: { ...prev.ratings, [category]: value },
-    }));
+    setNewReview({
+      ...newReview,
+      ratings: { ...newReview.ratings, [category]: value },
+    });
   };
 
+  const handleImage = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  // ==== Create & Update ====
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newReview.country || !newReview.city || !newReview.text) return;
-
     try {
-      let imageUrl = "";
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        formData.append("upload_preset", "your_upload_preset"); // configure no Cloudinary
-        const uploadRes = await axios.post(
-          `https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`,
-          formData
+      const formData = new FormData();
+      formData.append("text", newReview.text);
+      formData.append("city", newReview.city);
+      formData.append("ratings", JSON.stringify(newReview.ratings));
+      if (image) formData.append("image", image);
+
+      let res;
+      if (editingReview) {
+        // Update
+        res = await axios.put(
+          `${API_URL}/reviews/${editingReview._id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
-        imageUrl = uploadRes.data.secure_url;
+        setReviews(
+          reviews.map((r) => (r._id === editingReview._id ? res.data : r))
+        );
+        setEditingReview(null);
+      } else {
+        // Create
+        res = await axios.post(
+          `${API_URL}/reviews/${newReview.destinationCode}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        setReviews([res.data, ...reviews]);
       }
 
-      const reviewData = { ...newReview, image: imageUrl, user: loggedUser };
-
-      const res = await axios.post(`${API_URL}/reviews`, reviewData, {
-        headers: authHeaders(),
-      });
-      setReviews([res.data, ...reviews]);
+      // Reset form
       setNewReview({
-        country: "",
+        destinationCode: "",
         city: "",
         text: "",
         ratings: {
@@ -113,44 +143,57 @@ export default function ReviewsPage() {
           safety: 0,
         },
       });
-      setImageFile(null);
-      setPreview("");
+      setCities([]);
+      setImage(null);
     } catch (err) {
-      console.error("Error creating review:", err);
+      console.error("❌ Error posting/editing review:", err);
     }
   };
 
+  // ==== Delete ====
   const handleDelete = async (id) => {
     try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this review?"
+      );
+      if (!confirmDelete) return; // cancel if user clicks "Cancel"
+
       await axios.delete(`${API_URL}/reviews/${id}`, {
-        headers: authHeaders(),
+        headers: { Authorization: `Bearer ${token}` },
       });
       setReviews(reviews.filter((r) => r._id !== id));
     } catch (err) {
-      console.error("Error deleting review:", err);
+      console.error("❌ Error deleting review:", err);
+    }
+  };
+
+  // ==== LIKE review ====
+  const handleLike = async (id) => {
+    try {
+      const res = await axios.post(
+        `${API_URL}/reviews/${id}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setReviews(reviews.map((r) => (r._id === id ? res.data : r)));
+    } catch (err) {
+      console.error("❌ Error liking review:", err);
     }
   };
 
   return (
-    <div className="reviews-container">
-      <h1 className="title">Reviews</h1>
+    <div className="reviews-page">
+      <h2>Reviews</h2>
 
-      {/* Form */}
+      {/* === Create / Edit Form === */}
       <form onSubmit={handleSubmit} className="review-form">
-        <div className="upload-box">
-          <input type="file" onChange={handleImageChange} />
-          {preview && (
-            <img src={preview} alt="preview" className="preview-img" />
-          )}
-        </div>
-
         <select
-          value={newReview.country}
-          onChange={(e) =>
-            setNewReview({ ...newReview, country: e.target.value, city: "" })
-          }
+          name="destinationCode"
+          value={newReview.destinationCode}
+          onChange={handleCountryChange}
         >
-          <option value="">Country</option>
+          <option value="">Select Country</option>
           {countries.map((c) => (
             <option key={c.iso2} value={c.iso2}>
               {c.name}
@@ -158,44 +201,41 @@ export default function ReviewsPage() {
           ))}
         </select>
 
-        {/* Select City com loading */}
-        {loadingCities ? (
-          <span style={{ marginLeft: "10px" }}>Loading cities...</span>
-        ) : (
-          <select
-            value={newReview.city}
-            onChange={(e) =>
-              setNewReview({ ...newReview, city: e.target.value })
-            }
-            disabled={!cities.length}
-            style={{ marginLeft: "10px" }}
-          >
-            <option value="">City</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        )}
+        <select
+          name="city"
+          value={newReview.city}
+          onChange={handleChange}
+          disabled={!newReview.destinationCode}
+        >
+          <option value="">Select City</option>
+          {cities.map((city, index) => (
+            <option key={city.id || index} value={city.name}>
+              {city.name}
+            </option>
+          ))}
+        </select>
 
         <textarea
-          placeholder="Write about your experience"
+          name="text"
           value={newReview.text}
-          onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+          onChange={handleChange}
+          placeholder="Write about your experience"
+          maxLength={500}
         />
 
-        {/* Ratings */}
-        <div className="ratings-box">
+        <input type="file" onChange={handleImage} />
+
+        <div className="ratings">
           {Object.keys(newReview.ratings).map((cat) => (
-            <div key={cat} className="rating-row">
-              <span>{cat}</span>
+            <div key={cat}>
+              <label>{cat}</label>
               {[1, 2, 3, 4, 5].map((n) => (
                 <span
                   key={n}
-                  className={
-                    newReview.ratings[cat] >= n ? "star filled" : "star"
-                  }
+                  style={{
+                    cursor: "pointer",
+                    color: newReview.ratings[cat] >= n ? "gold" : "lightgray",
+                  }}
                   onClick={() => handleRating(cat, n)}
                 >
                   ★
@@ -205,40 +245,40 @@ export default function ReviewsPage() {
           ))}
         </div>
 
-        <button type="submit" className="share-btn">
-          Share
-        </button>
+        <button type="submit">{editingReview ? "Save Edit" : "Share"}</button>
       </form>
 
-      {/* Reviews list */}
-      <ul className="reviews-list">
-        {reviews.map((rev) => (
-          <li key={rev._id} className="review-card">
-            {rev.image && (
-              <img src={rev.image} alt="review" className="review-img" />
-            )}
-            <div>
-              <strong>
-                {rev.country} - {rev.city}
-              </strong>
-              <p>{rev.text}</p>
-              <div className="ratings-inline">
-                {Object.entries(rev.ratings).map(([cat, val]) => (
-                  <span key={cat}>
-                    {cat}: {"★".repeat(val)}
-                  </span>
-                ))}
+      {/* === List Reviews === */}
+      {reviews.map((r) => (
+        <div key={r._id} className="review-card">
+          <p>
+            <b>{r.user?.name}</b> shared about {r.city}, {r.destinationCode} on{" "}
+            {new Date(r.createdAt).toLocaleDateString()}
+          </p>
+          <p>{r.text}</p>
+          {r.imageUrl && <img src={r.imageUrl} alt="review" width="200" />}
+
+          <div>
+            {Object.entries(r.ratings).map(([cat, val]) => (
+              <div key={cat}>
+                {cat}: {"★".repeat(val)} {"☆".repeat(5 - val)}
               </div>
-              {rev.user === loggedUser && (
-                <div className="actions">
-                  <button onClick={() => alert("Edit here")}>Edit</button>
-                  <button onClick={() => handleDelete(rev._id)}>Delete</button>
-                </div>
-              )}
+            ))}
+          </div>
+          {/* 👍 Like button for all users */}
+          <button onClick={() => handleLike(r._id)}>
+            👍 {r.likes?.length || 0}
+          </button>
+
+          {/* Only owner can edit/delete */}
+          {String(r.user?._id) === String(currentUserId) && (
+            <div>
+              <button onClick={() => handleDelete(r._id)}>Delete</button>
+              <button onClick={() => setEditingReview(r)}>Edit</button>
             </div>
-          </li>
-        ))}
-      </ul>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
