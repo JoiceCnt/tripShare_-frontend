@@ -19,16 +19,16 @@ export default function FavouritesDestinationsPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Mis Destinos Favoritos</h1>
+      <h1>My Favourites Destinations</h1>
 
       {cities.length > 0 && (
         <div style={{ marginBottom: "20px" }}>
-          <label>Filtrar por ciudad: </label>
+          <label>City filter: </label>
           <select
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
           >
-            <option value="">Todas</option>
+            <option value="">All Destinations</option>
             {cities.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -39,7 +39,7 @@ export default function FavouritesDestinationsPage() {
       )}
 
       {filtered.length === 0 ? (
-        <p>No tienes destinos favoritos aún.</p>
+        <p>Not yet favourite destinations..</p>
       ) : (
         <ul>
           {filtered.map((d) => (

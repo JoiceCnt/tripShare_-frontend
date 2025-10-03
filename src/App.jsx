@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import ReviewsPage from "./pages/ReviewsPage";
 import DestinationsPage from "./pages/DestinationsPage";
 import SignUpPage from "./pages/SignUpPage";
+import FavouritesDestinationsPage from "./pages/FavouritesDestinationsPage";
 
 function App() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ function App() {
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/favourites" element={<FavouritesDestinationsPage />} />
       </Routes>
     </>
   );

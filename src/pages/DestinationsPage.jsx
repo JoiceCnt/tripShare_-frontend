@@ -192,6 +192,22 @@ export default function DestinationsPage() {
                       </span>
                     ))}
                 </div>
+
+                {/* Botón de favoritos para cada review */}
+                <button
+                  onClick={() => {
+                    const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+                    const exists = favs.find((d) => d._id === rev._id);
+                    if (!exists) {
+                      localStorage.setItem("favourites", JSON.stringify([...favs, rev]));
+                      alert("Añadido a favoritos");
+                    } else {
+                      alert("Ya está en favoritos");
+                    }
+                  }}
+                >
+                  ⭐ Favorito
+                </button>
               </li>
             ))}
           </ul>
