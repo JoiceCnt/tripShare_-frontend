@@ -69,3 +69,13 @@
   font-size: 14px;
   color: #1c3739;
 }
+.select-input {
+  padding: 6px 10px;
+  margin: 5px;
+  border: 1px solid #1c3739;
+  border-radius: 4px;
+  font-size: 14px;
+  background: #fff;
+  color: #1c3739;
+  font-family: "Gafata", sans-serif; /* força usar Gafata */
+}

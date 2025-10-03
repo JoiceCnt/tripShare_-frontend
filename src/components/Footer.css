@@ -1,0 +1,38 @@
+/* ===== Sticky footer setup ===== */
+body,
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ocupa toda la ventana */
+  margin: 0; /* quitar márgenes por defecto */
+}
+
+/* Contenedor principal antes del footer */
+.main-content {
+  flex: 1; /* ocupa el espacio restante */
+}
+.footer {
+  background-color: #8baaad; /* cor similar ao seu mockup */
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 2px solid #1c3739; /* linha inferior como no mockup */
+}
+
+.footer-nav {
+  display: flex;
+  gap: 80px; /* distância entre os links */
+}
+
+.footer-link {
+  color: #f4fff8; /* cor do texto igual no Figma */
+  text-decoration: none;
+  font-family: "Gafata", sans-serif;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #1c3739; /* destaque no hover */
+}

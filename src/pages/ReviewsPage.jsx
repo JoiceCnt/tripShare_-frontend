@@ -1,6 +1,7 @@
 // src/pages/ReviewsPage.jsx
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import "./ReviewsPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -184,7 +185,7 @@ export default function ReviewsPage() {
 
   return (
     <div className="reviews-page">
-      <h2>Reviews</h2>
+      <h2>Share your experience</h2>
 
       {/* === Create / Edit Form === */}
       <form onSubmit={handleSubmit} className="review-form">
@@ -261,7 +262,10 @@ export default function ReviewsPage() {
           <div>
             {Object.entries(r.ratings).map(([cat, val]) => (
               <div key={cat}>
-                {cat}: {"★".repeat(val)} {"☆".repeat(5 - val)}
+                {cat
+                  .replace(/([A-Z])/g, " $1") // separa camelCase
+                  .replace(/^./, (str) => str.toUpperCase())}
+                : {"★".repeat(val)} {"☆".repeat(5 - val)}
               </div>
             ))}
           </div>

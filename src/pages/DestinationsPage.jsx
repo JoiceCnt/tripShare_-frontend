@@ -1,6 +1,7 @@
 // src/pages/DestinationsPage.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./DestinationsPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,6 +77,21 @@ export default function DestinationsPage() {
     return (valid.reduce((sum, v) => sum + v, 0) / valid.length).toFixed(1);
   };
 
+  // Função para pegar a review com mais likes
+  const getTopReview = () => {
+    if (reviews.length === 0) return null;
+    return reviews.reduce((max, r) =>
+      (r.likes?.length || 0) > (max.likes?.length || 0) ? r : max
+    );
+  };
+
+  // Função para formatar os nomes das categorias
+  const formatCategoryName = (cat) => {
+    return cat
+      .replace(/([A-Z])/g, " $1") // separa camelCase
+      .replace(/^./, (str) => str.toUpperCase()); // primeira letra maiúscula
+  };
+
   const categories = [
     "gastronomy",
     "events",
@@ -88,11 +104,12 @@ export default function DestinationsPage() {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Destinations</h1>
+    <div className="destinations-page">
+      <h1 className="page-title">Destinations</h1>
 
       {/* Select country */}
       <select
+        className="select-input"
         value={selectedCountry}
         onChange={(e) => {
           setSelectedCountry(e.target.value);
@@ -113,9 +130,9 @@ export default function DestinationsPage() {
       {/* Select city */}
       {cities.length > 0 && (
         <select
+          className="select-input"
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
-          style={{ marginLeft: "10px" }}
         >
           <option value="">Select a city</option>
           {cities.map((city) => (
@@ -128,26 +145,18 @@ export default function DestinationsPage() {
 
       {/* Filters */}
       {selectedCity && (
-        <div style={{ marginTop: "20px" }}>
+        <div className="filters">
           <h3>Filter by category</h3>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <div className="filter-buttons">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => toggleCategory(cat)}
-                style={{
-                  padding: "5px 10px",
-                  border: selectedCategories.includes(cat)
-                    ? "2px solid #1C3739"
-                    : "1px solid #ccc",
-                  background: selectedCategories.includes(cat)
-                    ? "#BFCC94"
-                    : "white",
-                  cursor: "pointer",
-                  borderRadius: "6px",
-                }}
+                className={`filter-btn ${
+                  selectedCategories.includes(cat) ? "active" : ""
+                }`}
               >
-                {cat}
+                {formatCategoryName(cat)}
               </button>
             ))}
           </div>
@@ -156,44 +165,64 @@ export default function DestinationsPage() {
 
       {/* Average Ratings */}
       {reviews.length > 0 && (
-        <div style={{ marginTop: "20px" }}>
+        <div className="average-section">
           <h3>Average Ratings in {selectedCity}</h3>
-          <ul>
+          <ul className="average-list">
             {categories.map((cat) => (
               <li key={cat}>
-                {cat}: {getAverageRating(cat)} ⭐
+                {formatCategoryName(cat)}: {getAverageRating(cat)} ⭐
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Reviews */}
-      {filteredReviews.length > 0 && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Reviews</h3>
-          <ul>
-            {filteredReviews.map((rev) => (
-              <li key={rev._id} style={{ marginBottom: "15px" }}>
-                <p>{rev.text}</p>
-                {rev.imageUrl && (
+      {/* Most Liked Review */}
+      {reviews.length > 0 && (
+        <div className="top-review">
+          <h3>⭐ Most Liked Review in {selectedCity}</h3>
+          {(() => {
+            const top = getTopReview();
+            if (!top) return <p>No reviews yet.</p>;
+            return (
+              <div className="review-card top horizontal">
+                <p className="review-text">
+                  <strong>{top.text}</strong>
+                </p>
+                {top.imageUrl && (
                   <img
-                    src={rev.imageUrl}
-                    alt="Review"
-                    style={{ width: "150px", borderRadius: "8px" }}
+                    src={top.imageUrl}
+                    alt="Top review"
+                    className="review-img right"
                   />
                 )}
-                <div>
-                  {Object.entries(rev.ratings || {})
-                    .filter(([, v]) => Number(v) > 0)
-                    .map(([k, v]) => (
-                      <span key={k} style={{ marginRight: "10px" }}>
-                        {k}: {v}⭐
-                      </span>
-                    ))}
-                </div>
-              </li>
-            ))}
+                <p>👍 {top.likes?.length || 0} likes</p>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Reviews */}
+      {filteredReviews.length > 0 && (
+        <div className="reviews-list">
+          <h3>All Reviews</h3>
+          <ul>
+            {[...filteredReviews]
+              .sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))
+              .map((rev) => (
+                <li key={rev._id} className="review-card horizontal">
+                  <p className="review-text">{rev.text}</p>
+                  {rev.imageUrl && (
+                    <img
+                      src={rev.imageUrl}
+                      alt="Review"
+                      className="review-img right"
+                    />
+                  )}
+                  <p>👍 {rev.likes?.length || 0} likes</p>
+                </li>
+              ))}
           </ul>
         </div>
       )}

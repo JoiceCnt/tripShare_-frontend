@@ -19,13 +19,14 @@
 }
 
 /* Logo à esquerda */
-.navbar-logo {
-  font-size: 22px;
-  font-weight: bold;
-  color: var(--btn-color);
-  display: flex;
+.tm-brand {
+  display: inline-flex;
   align-items: center;
-  height: 100%;
+  justify-content: flex-start;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 /* Menu centralizado */
@@ -55,7 +56,17 @@
 }
 
 /* Ativo (rota atual) */
-.nav-btn.active {
-  background-color: #e6e4db; /* cor da paleta para ativo */
-  color: #1c3739;
+.tm-navbar .tm-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start; /* siempre a la izquierda */
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.tm-brand .tm-brand-pin {
+  height: 75px; /* tamaño fijo razonable */
+  width: auto;
+  object-fit: contain;
 }

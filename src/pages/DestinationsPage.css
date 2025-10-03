@@ -1,0 +1,159 @@
+.destinations-page {
+  padding: 20px;
+  font-family: "Gafata", sans-serif;
+  background: transparent; /* sem fundo */
+  color: #1c3739;
+}
+
+.page-title {
+  font-size: 24px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* === Select inputs === */
+.select-input {
+  padding: 6px 10px;
+  margin: 5px;
+  border: 1px solid #1c3739;
+  border-radius: 4px;
+  font-size: 14px;
+  background: #fff;
+  color: #1c3739;
+  font-family: "Gafata", sans-serif;
+}
+
+/* === Filtros === */
+.filters {
+  margin-top: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #1c3739; /* fundo padrão */
+  color: #fff; /* texto branco */
+  font-family: "Gafata", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  opacity: 0.9;
+}
+
+.filter-btn.active {
+  background: #8baaad; /* fundo quando selecionado */
+  color: #fff; /* texto branco */
+  font-weight: bold;
+}
+
+/* === Médias === */
+.average-section {
+  margin-top: 20px;
+}
+
+.average-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* === Most liked review === */
+.top-review {
+  margin-top: 20px;
+}
+
+.review-card.top {
+  border: 2px solid #1c3739;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: transparent;
+}
+
+/* === Lista de reviews === */
+.reviews-list {
+  margin-top: 20px;
+}
+
+/* Card base */
+.review-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #8baaad; /* linha entre reviews */
+  padding: 12px 16px; /* espaço interno consistente */
+  border-radius: 6px;
+}
+
+/* Layout horizontal */
+.review-card.horizontal {
+  flex-direction: row;
+}
+
+/* Texto */
+.review-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  color: #1c3739;
+  margin: 0; /* remove margem padrão do <p> */
+}
+
+/* Imagem */
+.review-img.right {
+  width: 150px;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* === Responsividade === */
+@media (max-width: 768px) {
+  .review-card.horizontal,
+  .review-card.top {
+    flex-direction: column; /* empilha no mobile */
+    align-items: flex-start;
+  }
+
+  .review-img.right {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 10px;
+  }
+
+  .filter-buttons {
+    justify-content: flex-start;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .select-input {
+    width: 100%;
+  }
+
+  .filter-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .review-text {
+    font-size: 13px;
+  }
+}
