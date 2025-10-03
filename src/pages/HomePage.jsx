@@ -25,19 +25,19 @@ const infoCards = [
   {
     id: "ny",
     title: "New York",
-    img: "./",
+    img: "/Frontend/public/image/ny.png",
     text: `New York City is often called “The City That Never Sleeps”, and with good reason. It’s a place where ambition meets creativity, and every street corner tells a story...`,
   },
   {
     id: "paris",
     title: "Paris",
-    img: "../assets/paris.png",
+    img: "/Frontend/public/image/paris.png",
     text: `Paris is a city that blends timeless beauty with modern life. If you’re visiting, start with the Eiffel Tower...`,
   },
   {
     id: "rio",
     title: "Rio de Janeiro",
-    img: "../assets/rio.jpg",
+    img: "/Frontend/public/image/rio.jpg",
     text: `Rio de Janeiro is a city where nature and culture blend in perfect harmony...`,
   },
 ];
