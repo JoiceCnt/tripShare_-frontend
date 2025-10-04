@@ -1,8 +1,11 @@
 :root {
   --nav-h: 70px;
-  --nav-bg: #8baaad; /* cor da navbar */
-  --btn-bg: #1c3739; /* fundo dos botões */
-  --btn-color: #ffffff; /* texto */
+  --nav-bg: rgba(139, 170, 173, 0.8); /* navbar semi-transparente */
+  --btn-bg: #1c3739;
+  --btn-hover: #0f2a2b;
+  --btn-color: #ffffff;
+  --btn-radius: 9999px; /* pill shape */
+  --transition: 0.25s ease;
 }
 
 /* Navbar container */
@@ -10,63 +13,119 @@
   height: var(--nav-h);
   width: 100%;
   background-color: var(--nav-bg);
+  backdrop-filter: blur(8px); /* efecto vidrio */
   display: flex;
   align-items: center;
-  justify-content: space-between; /* espaço entre logo e menu */
-  padding: 0 40px;
+  justify-content: space-between;
+  padding: 0 2vw;
   font-family: "Gafata", sans-serif;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-sizing: border-box;
 }
 
-/* Logo à esquerda */
+/* Logo */
 .tm-brand {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
 }
 
-/* Menu centralizado */
-.navbar-menu {
-  flex: 1; /* ocupa espaço para centralizar */
-  display: flex;
-  justify-content: center; /* centraliza horizontalmente */
-  gap: 20px;
+.tm-brand .tm-brand-pin {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform var(--transition);
 }
 
-/* Links estilizados como botões */
+.tm-brand:hover .tm-brand-pin {
+  transform: scale(1.05);
+}
+
+/* Menu central */
+.navbar-menu {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: center;
+  position: relative;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 18px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navbar-auth {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
 .nav-btn {
-  background-color: var(--btn-bg);
+  background: linear-gradient(135deg, #1c3739, #2a5052);
   color: var(--btn-color);
   text-decoration: none;
-  padding: 6px 18px;
+  padding: 10px 20px;
   font-size: 15px;
-  font-family: "Gafata", sans-serif;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background 0.2s, transform 0.1s;
+  border-radius: var(--btn-radius); /* pill shape */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .nav-btn:hover {
-  background-color: #0f2a2b;
-  transform: translateY(-1px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #2a5052, #1c3739);
 }
 
-/* Ativo (rota atual) */
-.tm-navbar .tm-brand {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start; /* siempre a la izquierda */
-  cursor: pointer;
-  padding: 0;
-  background: none;
+.nav-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: skewX(-25deg);
+  transition: all 0.5s ease;
 }
 
-.tm-brand .tm-brand-pin {
-  height: 75px; /* tamaño fijo razonable */
-  width: auto;
-  object-fit: contain;
+.nav-btn:hover::after {
+  left: 125%;
+}
+
+.nav-btn.active {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #1c3739;
+  box-shadow: 0 6px 16px rgba(255, 179, 71, 0.4);
+}
+
+/* Responsive tweak */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 15px;
+  }
+
+  .navbar-menu {
+    gap: 10px;
+  }
+
+  .nav-btn {
+    padding: 6px 14px;
+    font-size: 14px;
+  }
 }

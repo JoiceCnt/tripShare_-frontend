@@ -1,80 +1,144 @@
+/* AboutPage.css — matches your navbar (bg #A1A4A0, text/outline #1C3739, accent #C06E52) */
+
+/* Palette & layout tokens */
 :root {
-  --primary: #1c3739;
-  --accent: #8baaad;
-  --light: #f5f5f5;
-  --card-bg: #ffffff;
+  --navbar-bg: #a1a4a0;
+  --ink: #1c3739;
+  --accent: #c06e52;
+  --card: #ffffff;
+  --line: #dce2e0;
+  --shadow: 0 6px 26px rgba(0, 0, 0, 0.06);
   --radius: 8px;
+  --navbar-h: 72px; /* increase if your navbar is taller */
 }
 
-/* Container da página de auth */
-.auth-container {
-  display: flex;
-  flex-direction: column;
+/* Main area */
+.tm-about {
+  padding: calc(var(--navbar-h) + 24px) 16px 56px; /* safe space if navbar is fixed */
+  color: var(--ink);
+  background: #fff;
+  display: grid;
+  place-items: start center;
+  min-height: 100dvh;
+}
+
+.tm-about-container {
+  width: min(980px, 92vw);
+}
+
+/* Title (optional Yanone font loaded globally) */
+.tm-about-title {
+  font-family: "Yanone Kaffeesatz", system-ui, -apple-system, "Segoe UI", Roboto,
+    Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: clamp(32px, 5vw, 44px);
+  line-height: 1.05;
+  margin: 0 0 12px;
+  color: var(--ink);
+  letter-spacing: 0.2px;
+  font-weight: 600;
+}
+
+/* Body copy */
+.tm-about-text {
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.7;
+  color: #3d5154;
+  margin: 0 0 28px;
+}
+
+/* Founders grid */
+.tm-founders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* Founder card */
+.tm-founder-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
   align-items: center;
-  margin-top: 60px;
-}
-
-/* Título */
-.auth-title {
-  color: var(--primary);
-  margin-bottom: 20px;
-  font-size: 28px;
-  font-family: "Gafata", sans-serif;
-}
-
-/* Formulário */
-.auth-form {
-  background: var(--card-bg);
-  padding: 30px 40px;
+  gap: 16px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+}
+
+/* Photo */
+.tm-founder-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #f7faf9;
+  display: grid;
+  place-items: center;
+}
+
+.tm-founder-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info */
+.tm-founder-info {
+  min-width: 0;
+}
+
+.tm-founder-name {
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+/* Social buttons (white fill, ink outline, radius 8) */
+.tm-founder-links {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 320px;
+  gap: 10px;
+  align-items: center;
 }
 
-/* Inputs */
-.auth-input {
-  padding: 12px;
+.tm-icon-link {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
   border-radius: var(--radius);
-  border: 1px solid var(--accent);
-  background: var(--light);
-  font-family: "Gafata", sans-serif;
-  font-size: 15px;
+  border: 1px solid var(--ink);
+  background: #ffffff;
+  transition: transform 120ms ease, box-shadow 120ms ease,
+    border-color 120ms ease;
 }
 
-.auth-input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-/* Botão */
-.auth-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px;
-  font-size: 16px;
-  font-family: "Gafata", sans-serif;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.auth-btn:hover {
-  background: #0f2a2b;
-}
-
-/* Mensagem */
-.auth-message {
-  margin-top: 15px;
-  font-size: 14px;
-  color: var(--primary);
-  text-align: center;
-}
 .tm-icon-link svg {
-  width: 24px;
-  height: 24px;
-  fill: var(--primary);
+  width: 100%;
+  height: 100%;
+  fill: var(--ink);
+}
+
+.tm-icon-link:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 24px rgba(192, 110, 82, 0.18);
+}
+
+.tm-icon-link:hover svg {
+  fill: var(--accent);
+}
+
+/* Mobile stack */
+@media (max-width: 480px) {
+  .tm-founder-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .tm-founder-links {
+    justify-content: center;
+  }
 }

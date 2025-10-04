@@ -9,15 +9,12 @@ import "../pages/HomePage.css";
 
 /* ---- Slides para el carrusel ---- */
 const slides = [
-  { src: "/images/makenewfriends2.png", title: "Make new friends" },
-  { src: "/images/enjoy.jpg", title: "Enjoy life" },
-  {
-    src: "/images/explorenaturetogether.jpg",
-    title: "Explore nature together",
-  },
-  { src: "/images/astronauts.jpg", title: "Discover new experiences" },
-  { src: "/images/bikes.jpg", title: "City rides" },
-  { src: "/images/door.jpg", title: "Explore cultures" },
+  { src: "/image/makenewfriends2.png", title: "Make new friends" },
+  { src: "/image/enjoy.jpg", title: "Enjoy life" },
+  { src: "/image/explorenaturetogether.jpg", title: "Explore nature together" },
+  { src: "/image/astronauts.jpg", title: "Discover new experiences" },
+  { src: "/image/bikes.jpg", title: "City rides" },
+  { src: "/image/door.jpg", title: "Explore cultures" },
 ];
 
 /* ---- Cards de destinos ---- */
@@ -25,19 +22,19 @@ const infoCards = [
   {
     id: "ny",
     title: "New York",
-    img: "/Frontend/public/image/ny.png",
+    img: "/image/ny.png",
     text: `New York City is often called “The City That Never Sleeps”, and with good reason. It’s a place where ambition meets creativity, and every street corner tells a story...`,
   },
   {
     id: "paris",
     title: "Paris",
-    img: "/Frontend/public/image/paris.png",
+    img: "/image/paris.png",
     text: `Paris is a city that blends timeless beauty with modern life. If you’re visiting, start with the Eiffel Tower...`,
   },
   {
     id: "rio",
     title: "Rio de Janeiro",
-    img: "/Frontend/public/image/rio.jpg",
+    img: "/image/rio.jpg",
     text: `Rio de Janeiro is a city where nature and culture blend in perfect harmony...`,
   },
 ];

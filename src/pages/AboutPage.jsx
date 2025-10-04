@@ -1,3 +1,8 @@
+// AboutPage.jsx
+// About page styled to match your navbar palette and rounded-8 look.
+
+import "./AboutPage.css";
+
 export default function AboutPage() {
   return (
     <main className="tm-about" role="main">
@@ -23,7 +28,7 @@ export default function AboutPage() {
             <div className="tm-founder-photo">
               {/* Put your real photo in /public/images/noemi.jpg */}
               <img
-                src="/images/fotoNoemi.png"
+                src="/image/noemi.jpg"
                 alt="Portrait of Noemi Mira Navarro"
               />
             </div>
@@ -33,7 +38,7 @@ export default function AboutPage() {
               <div className="tm-founder-links" aria-label="Noemi social links">
                 <a
                   className="tm-icon-link"
-                  href="https://www.linkedin.com/in/NOEMI_LINK"
+                  href="https://www.linkedin.com/in/noemi-mira-navarro/"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Noemi on LinkedIn"
@@ -46,7 +51,7 @@ export default function AboutPage() {
                 </a>
                 <a
                   className="tm-icon-link"
-                  href="https://github.com/NOEMI_GITHUB"
+                  href="https://github.com/NMN-germany"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Noemi on GitHub"
@@ -65,7 +70,7 @@ export default function AboutPage() {
           <article className="tm-founder-card">
             <div className="tm-founder-photo">
               {/* Put your real photo in /public/images/joice.jpg */}
-              <img src="/images/fotoJoice.jpg" alt="Portrait of Joice Conte" />
+              <img src="/image/Joice.jpg" alt="Portrait of Joice Conte" />
             </div>
 
             <div className="tm-founder-info">
@@ -85,7 +90,7 @@ export default function AboutPage() {
                 </a>
                 <a
                   className="tm-icon-link"
-                  href="https://github.com/JOICE_GITHUB"
+                  href="https://github.com/JoiceCnt"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Joice on GitHub"

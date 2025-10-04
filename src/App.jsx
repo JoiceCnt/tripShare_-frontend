@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import PolicyPage from "./pages/PolicyPage";
 import AboutPage from "./pages/AboutPage";
 import ContactUsPage from "./pages/ContactUsPage";
+import FavouritesDestinationsPage from "./pages/FavouritesDestinationsPage";
 
 function App() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function App() {
           <Route path="/contact" element={<ContactUsPage />} />
           <Route path="/policy" element={<PolicyPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="favourites" element={<FavouritesDestinationsPage />} />
         </Routes>
       </div>
       <Footer />

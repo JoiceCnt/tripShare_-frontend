@@ -23,7 +23,7 @@ export default function TripShareNavbar() {
         aria-label="Home"
       >
         <img
-          src="../assets/tripSharelogo.png"
+          src="/image/tripSharelogo.png"
           alt="Trip Match logo"
           className="tm-brand-pin"
         />
@@ -31,38 +31,42 @@ export default function TripShareNavbar() {
 
       {/* Menú de navegación */}
       <div className="navbar-menu">
-        <NavLink to="/destinations" className="nav-btn">
-          Destinations
-        </NavLink>
-        <NavLink to="/reviews" className="nav-btn">
-          Reviews
-        </NavLink>
-
-        {/* Favorites solo si está logueado */}
-        {isLoggedIn && (
-          <NavLink to="/favourites" className="nav-btn">
-            ⭐ Favourites
+        <div className="navbar-links">
+          <NavLink to="/destinations" className="nav-btn">
+            Destinations
           </NavLink>
-        )}
+          <NavLink to="/reviews" className="nav-btn">
+            Reviews
+          </NavLink>
 
-        {/* Sign Up / Login solo si NO está logueado */}
-        {!isLoggedIn && (
-          <>
-            <NavLink to="/signup" className="nav-btn">
-              Sign Up
+          {/* Favorites solo si está logueado */}
+          {isLoggedIn && (
+            <NavLink to="/favourites" className="nav-btn">
+              ❤️ Favourites
             </NavLink>
-            <NavLink to="/login" className="nav-btn">
-              Login
-            </NavLink>
-          </>
-        )}
+          )}
+        </div>
 
-        {/* Logout solo si está logueado */}
-        {isLoggedIn && (
-          <button onClick={handleLogout} className="nav-btn">
-            Logout
-          </button>
-        )}
+        <div className="navbar-auth">
+          {/* Sign Up / Login solo si NO está logueado */}
+          {!isLoggedIn && (
+            <>
+              <NavLink to="/signup" className="nav-btn">
+                Sign Up
+              </NavLink>
+              <NavLink to="/login" className="nav-btn">
+                Login
+              </NavLink>
+            </>
+          )}
+
+          {/* Logout solo si está logueado */}
+          {isLoggedIn && (
+            <button onClick={handleLogout} className="nav-btn">
+              Logout
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );
