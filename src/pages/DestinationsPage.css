@@ -1,145 +1,179 @@
+/* ===== Destinations Page Modern Styles ===== */
 .destinations-page {
-  padding: 20px;
+  padding: 30px 20px;
   font-family: "Gafata", sans-serif;
-  background: transparent; /* sem fundo */
+  background-color: #f9fafb;
   color: #1c3739;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .page-title {
-  font-size: 24px;
-  margin-bottom: 15px;
+  font-size: 34px;
+  margin-bottom: 25px;
   text-align: center;
+  font-weight: 700;
 }
 
-/* === Select inputs === */
+/* === Select Inputs === */
 .select-input {
-  padding: 6px 10px;
+  padding: 10px 14px;
   margin: 5px;
-  border: 1px solid #1c3739;
-  border-radius: 4px;
-  font-size: 14px;
-  background: #fff;
+  border-radius: 12px;
+  border: none;
+  background-color: #e0e0e0;
+  font-size: 15px;
   color: #1c3739;
-  font-family: "Gafata", sans-serif;
+  transition: all 0.3s ease;
 }
 
-/* === Filtros === */
-.filters {
+.select-input:focus {
+  outline: none;
+  box-shadow: 0 0 6px rgba(92, 128, 188, 0.5);
+}
+
+/* === Filter Buttons === */
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
   margin-top: 20px;
 }
 
-.filter-buttons {
+.filter-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 9999px;
+  background-color: #1c3739;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease, transform 0.15s;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.filter-btn.active {
+  background-color: #5c80bc;
+  font-weight: bold;
+}
+.h3 {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.filter-btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  background: #1c3739; /* fundo padrão */
-  color: #fff; /* texto branco */
-  font-family: "Gafata", sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* === Cards Grid === */
+.reviews-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  list-style: none;
+  padding: 0;
+  margin: 25px auto 0;
+  width: 100%;
+  max-width: 1400px;
 }
 
-.filter-btn:hover {
-  opacity: 0.9;
-}
-
-.filter-btn.active {
-  background: #8baaad; /* fundo quando selecionado */
-  color: #fff; /* texto branco */
-  font-weight: bold;
-}
-
-/* === Médias === */
-.average-section {
-  margin-top: 20px;
-}
-
-.average-list {
+/* === Review / Destination Cards === */
+.review-card {
+  width: 100%;
+  max-width: 700px;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* === Most liked review === */
-.top-review {
-  margin-top: 20px;
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
-.review-card.top {
-  border: 2px solid #1c3739;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  background: transparent;
-}
-
-/* === Lista de reviews === */
-.reviews-list {
-  margin-top: 20px;
-}
-
-/* Card base */
-.review-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid #8baaad; /* linha entre reviews */
-  padding: 12px 16px; /* espaço interno consistente */
-  border-radius: 6px;
-}
-
-/* Layout horizontal */
-.review-card.horizontal {
-  flex-direction: row;
-}
-
-/* Texto */
+/* === Card Content === */
 .review-text {
-  flex: 1;
-  font-size: 14px;
-  line-height: 1.4;
-  text-align: left;
+  font-size: 15px;
   color: #1c3739;
-  margin: 0; /* remove margem padrão do <p> */
-}
-
-/* Imagem */
-.review-img.right {
-  width: 150px;
-  height: auto;
+  background-color: #f0f4f8;
+  padding: 12px;
   border-radius: 8px;
-  object-fit: cover;
+  border: 1px solid #e0e0e0;
+  margin: 0;
 }
 
-/* === Responsividade === */
-@media (max-width: 768px) {
-  .review-card.horizontal,
-  .review-card.top {
-    flex-direction: column; /* empilha no mobile */
-    align-items: flex-start;
+.review-img {
+  width: 100%;
+  max-width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  align-self: center;
+}
+
+/* === Ratings Grid === */
+.ratings-card {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 12px;
+  margin-top: 8px;
+}
+
+.ratings-card span {
+  color: gold;
+}
+
+.ratings-card span.inactive {
+  color: lightgray;
+}
+
+/* === Top Review Card === */
+.review-card.top.horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  border: 2px solid #5c80bc;
+  padding: 16px 20px;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+  .reviews-list {
+    grid-template-columns: 1fr;
   }
 
-  .review-img.right {
+  .review-img {
     width: 100%;
-    max-width: 300px;
-    margin-top: 10px;
+    height: auto;
   }
 
+  .review-card.top.horizontal {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
   .filter-buttons {
     justify-content: flex-start;
   }
 
   .page-title {
-    font-size: 20px;
+    font-size: 28px;
   }
 }
 
@@ -154,6 +188,6 @@
   }
 
   .review-text {
-    font-size: 13px;
+    font-size: 14px;
   }
 }

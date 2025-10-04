@@ -14,7 +14,7 @@ export default function DestinationsPage() {
   const [filteredReviews, setFilteredReviews] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // Fetch all countries
+  // === Fetch all countries ===
   useEffect(() => {
     axios
       .get(`${API_URL}/destinations/countries`)
@@ -22,7 +22,7 @@ export default function DestinationsPage() {
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
-  // Fetch cities when country changes
+  // === Fetch cities when country changes ===
   useEffect(() => {
     if (!selectedCountry) return;
     axios
@@ -31,7 +31,7 @@ export default function DestinationsPage() {
       .catch((err) => console.error("Error fetching cities:", err));
   }, [selectedCountry]);
 
-  // Fetch reviews when city changes
+  // === Fetch reviews when city changes ===
   useEffect(() => {
     if (!selectedCountry || !selectedCity) return;
     axios
@@ -42,33 +42,37 @@ export default function DestinationsPage() {
       )
       .then((res) => {
         setReviews(res.data);
-        setFilteredReviews(res.data); // inicial sem filtro
+        setFilteredReviews(res.data);
       })
       .catch((err) => console.error("Error fetching reviews:", err));
   }, [selectedCountry, selectedCity]);
 
-  // Handle filter selection
+  // === Handle category toggle ===
   const toggleCategory = (cat) => {
-    let updated;
-    if (selectedCategories.includes(cat)) {
-      updated = selectedCategories.filter((c) => c !== cat);
-    } else {
-      updated = [...selectedCategories, cat];
-    }
-    setSelectedCategories(updated);
+    setSelectedCategories((prev) => {
+      let updated;
+      if (prev.includes(cat)) {
+        updated = prev.filter((c) => c !== cat);
+      } else {
+        updated = [cat]; // 👉 permite filtrar apenas uma categoria de cada vez
+      }
 
-    // filtra reviews com base nas categorias selecionadas
-    if (updated.length === 0) {
-      setFilteredReviews(reviews);
-    } else {
-      const filtered = reviews.filter((r) =>
-        updated.some((cat) => Number(r.ratings?.[cat]) > 0)
-      );
-      setFilteredReviews(filtered);
-    }
+      // === Filtrar reviews com base na categoria ===
+      if (updated.length === 0) {
+        setFilteredReviews(reviews);
+      } else {
+        const selectedCat = updated[0];
+        const filtered = reviews.filter(
+          (r) => Number(r.ratings?.[selectedCat]) > 0
+        );
+        setFilteredReviews(filtered);
+      }
+
+      return updated;
+    });
   };
 
-  // Função para calcular média de rating por categoria
+  // === Média de rating por categoria ===
   const getAverageRating = (category) => {
     const valid = reviews
       .map((r) => Number(r.ratings?.[category]) || 0)
@@ -77,7 +81,7 @@ export default function DestinationsPage() {
     return (valid.reduce((sum, v) => sum + v, 0) / valid.length).toFixed(1);
   };
 
-  // Função para pegar a review com mais likes
+  // === Review com mais likes ===
   const getTopReview = () => {
     if (reviews.length === 0) return null;
     return reviews.reduce((max, r) =>
@@ -85,11 +89,11 @@ export default function DestinationsPage() {
     );
   };
 
-  // Função para formatar os nomes das categorias
+  // === Formatar nome da categoria ===
   const formatCategoryName = (cat) => {
     return cat
-      .replace(/([A-Z])/g, " $1") // separa camelCase
-      .replace(/^./, (str) => str.toUpperCase()); // primeira letra maiúscula
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase());
   };
 
   const categories = [
@@ -103,11 +107,14 @@ export default function DestinationsPage() {
     "safety",
   ];
 
+  // === Contador de reviews filtradas ===
+  const reviewCount = filteredReviews.length;
+
   return (
     <div className="destinations-page">
       <h1 className="page-title">Destinations</h1>
 
-      {/* Select country */}
+      {/* === Select country === */}
       <select
         className="select-input"
         value={selectedCountry}
@@ -117,6 +124,7 @@ export default function DestinationsPage() {
           setSelectedCity("");
           setReviews([]);
           setFilteredReviews([]);
+          setSelectedCategories([]);
         }}
       >
         <option value="">Select a country</option>
@@ -127,7 +135,7 @@ export default function DestinationsPage() {
         ))}
       </select>
 
-      {/* Select city */}
+      {/* === Select city === */}
       {cities.length > 0 && (
         <select
           className="select-input"
@@ -143,7 +151,7 @@ export default function DestinationsPage() {
         </select>
       )}
 
-      {/* Filters */}
+      {/* === Filters === */}
       {selectedCity && (
         <div className="filters">
           <h3>Filter by category</h3>
@@ -160,10 +168,17 @@ export default function DestinationsPage() {
               </button>
             ))}
           </div>
+          {selectedCategories.length > 0 && (
+            <p className="filter-info">
+              Showing <strong>{reviewCount}</strong> review
+              {reviewCount !== 1 ? "s" : ""} with category{" "}
+              <strong>{formatCategoryName(selectedCategories[0])}</strong>
+            </p>
+          )}
         </div>
       )}
 
-      {/* Average Ratings */}
+      {/* === Average Ratings === */}
       {reviews.length > 0 && (
         <div className="average-section">
           <h3>Average Ratings in {selectedCity}</h3>
@@ -177,7 +192,7 @@ export default function DestinationsPage() {
         </div>
       )}
 
-      {/* Most Liked Review */}
+      {/* === Most Liked Review === */}
       {reviews.length > 0 && (
         <div className="top-review">
           <h3>⭐ Most Liked Review in {selectedCity}</h3>
@@ -203,7 +218,7 @@ export default function DestinationsPage() {
         </div>
       )}
 
-      {/* Reviews */}
+      {/* === Reviews === */}
       {filteredReviews.length > 0 && (
         <div className="reviews-list">
           <h3>All Reviews</h3>
@@ -220,11 +235,17 @@ export default function DestinationsPage() {
                       className="review-img right"
                     />
                   )}
+
                   <p>👍 {rev.likes?.length || 0} likes</p>
                 </li>
               ))}
           </ul>
         </div>
+      )}
+
+      {/* === Mensagem se não houver reviews === */}
+      {selectedCity && reviews.length === 0 && (
+        <p>No reviews available for this city.</p>
       )}
     </div>
   );

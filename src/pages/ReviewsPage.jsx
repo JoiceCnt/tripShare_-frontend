@@ -168,6 +168,33 @@ export default function ReviewsPage() {
     }
   };
 
+  const handleFavourite = async (review) => {
+    if (!token) return alert("You need to be logged in to add favourites!");
+
+    try {
+      await axios.post(
+        `${API_URL}/favourites/${review._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const currentFavs = JSON.parse(
+        localStorage.getItem("favourites") || "[]"
+      );
+      const alreadyExists = currentFavs.some((f) => f._id === review._id);
+      if (!alreadyExists) {
+        localStorage.setItem(
+          "favourites",
+          JSON.stringify([...currentFavs, review])
+        );
+      }
+
+      alert("Added to favourites!");
+    } catch (err) {
+      console.error("❌ Error adding favourite:", err);
+    }
+  };
+
   // ==== LIKE review ====
   const handleLike = async (id) => {
     try {
@@ -250,39 +277,50 @@ export default function ReviewsPage() {
       </form>
 
       {/* === List Reviews === */}
-      {reviews.map((r) => (
-        <div key={r._id} className="review-card">
-          <p>
-            <b>{r.user?.name}</b> shared about {r.city}, {r.destinationCode} on{" "}
-            {new Date(r.createdAt).toLocaleDateString()}
-          </p>
-          <p>{r.text}</p>
-          {r.imageUrl && <img src={r.imageUrl} alt="review" width="200" />}
+      <div className="reviews-list">
+        {reviews.map((r) => (
+          <div key={r._id} className="review-card">
+            <p>
+              <b>{r.user?.name}</b> shared about {r.city}, {r.destinationCode}{" "}
+              on {new Date(r.createdAt).toLocaleDateString()}
+            </p>
+            <p>{r.text}</p>
+            {r.imageUrl && <img src={r.imageUrl} alt="review" width="200" />}
 
-          <div>
-            {Object.entries(r.ratings).map(([cat, val]) => (
-              <div key={cat}>
-                {cat
-                  .replace(/([A-Z])/g, " $1") // separa camelCase
-                  .replace(/^./, (str) => str.toUpperCase())}
-                : {"★".repeat(val)} {"☆".repeat(5 - val)}
-              </div>
-            ))}
-          </div>
-          {/* 👍 Like button for all users */}
-          <button onClick={() => handleLike(r._id)}>
-            👍 {r.likes?.length || 0}
-          </button>
-
-          {/* Only owner can edit/delete */}
-          {String(r.user?._id) === String(currentUserId) && (
             <div>
-              <button onClick={() => handleDelete(r._id)}>Delete</button>
-              <button onClick={() => setEditingReview(r)}>Edit</button>
+              {Object.entries(r.ratings).map(([cat, val]) => (
+                <div key={cat}>
+                  {cat
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  : {"★".repeat(val)} {"☆".repeat(5 - val)}
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      ))}
+            {token && (
+              <button
+                onClick={() => handleFavourite(r)}
+                className="favourite-btn"
+              >
+                ❤️ Favourite
+              </button>
+            )}
+
+            {/* 👍 Like button for all users */}
+            <button onClick={() => handleLike(r._id)}>
+              👍 {r.likes?.length || 0}
+            </button>
+
+            {/* Only owner can edit/delete */}
+            {String(r.user?._id) === String(currentUserId) && (
+              <div>
+                <button onClick={() => handleDelete(r._id)}>Delete</button>
+                <button onClick={() => setEditingReview(r)}>Edit</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

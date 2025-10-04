@@ -2,14 +2,19 @@
 .reviews-page {
   font-family: "Gafata", sans-serif;
   color: #1c3739;
-  padding: 20px;
-  background-color: #f5f5f5;
+  padding: 30px 20px;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .reviews-page h2 {
-  margin-bottom: 20px;
-  font-size: 22px;
+  margin-bottom: 25px;
+  font-size: 34px;
+  font-weight: 700;
   color: #1c3739;
+  font-weight: bold;
 }
 
 /* ===== FORM ===== */
@@ -18,19 +23,21 @@
   flex-wrap: wrap;
   gap: 15px;
   align-items: flex-start;
+  max-width: 700px;
+  width: 100%;
   margin-bottom: 30px;
   background-color: #ffffff;
-  padding: 15px;
-  border: 1px solid #1c3739;
-  border-radius: 5px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Dropdowns */
 .review-form select {
-  background-color: #f5f5f5;
-  border: 1px solid #1c3739;
-  border-radius: 3px;
-  padding: 5px 10px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
   font-size: 14px;
   color: #1c3739;
 }
@@ -43,13 +50,14 @@
 /* Textarea */
 .review-form textarea {
   flex: 1 1 100%;
-  min-height: 90px;
-  border: 1px solid #1c3739;
-  background-color: #f5f5f5;
-  border-radius: 3px;
-  padding: 10px;
+  min-height: 100px;
+  border: none;
+  background-color: #e1dfdf;
+  border-radius: 8px;
+  padding: 12px;
   font-size: 14px;
   resize: none;
+  color: #1c3739;
 }
 
 /* Upload */
@@ -59,7 +67,7 @@
   margin-top: 5px;
 }
 
-/* Ratings */
+/* Ratings Form */
 .ratings {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -69,7 +77,7 @@
 }
 
 .ratings label {
-  font-size: 13px;
+  font-size: 14px;
   margin-right: 5px;
   color: #1c3739;
 }
@@ -77,72 +85,135 @@
 .ratings span {
   font-size: 18px;
   margin-left: 2px;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.2s;
+  cursor: pointer;
 }
 
 .ratings span:hover {
-  transform: scale(1.1);
+  transform: scale(1.2);
+  color: #5c80bc;
 }
 
-/* Share Button */
-.review-form button {
-  background-color: #1c3739;
-  color: #ffffff;
-  border: 1px solid #1c3739;
-  border-radius: 4px;
-  padding: 6px 20px;
-  cursor: pointer;
+/* Share / Edit / Delete Buttons (navbar style) */
+.review-form button,
+.review-card button {
+  background-color: rgba(139, 170, 173, 0.8);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 16px;
   font-size: 14px;
-  font-weight: bold;
-  transition: background 0.3s, color 0.3s;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 
-.review-form button:hover {
-  background-color: #ffffff;
-  color: #1c3739;
+.review-form button:hover,
+.review-card button:hover {
+  background-color: #c1cbdb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+.reviews-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  width: 100%;
+  justify-items: center;
+}
 /* ===== REVIEW CARDS ===== */
 .review-card {
-  border: 1px solid #1c3739;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 12px;
+  padding: 20px;
   background-color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.review-card p {
-  margin: 5px 0;
-  font-size: 14px;
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
-.review-card img {
-  margin-top: 10px;
-  max-width: 200px;
-  border-radius: 3px;
-  border: 1px solid #1c3739;
+/* Usuario más grande */
+.review-card p:first-child b {
+  font-size: 17px;
+  color: #5c80bc;
 }
 
-/* Ratings inside card */
-.review-card div {
-  font-size: 13px;
-  margin: 2px 0;
-}
-
-/* Buttons inside card */
-.review-card button {
-  background-color: #ffffff;
+/* Texto de la review en cuadro */
+.review-card p:nth-child(2) {
+  font-size: 15px;
   color: #1c3739;
-  border: 1px solid #1c3739;
-  border-radius: 3px;
-  padding: 3px 10px;
-  margin-right: 5px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s;
+  background-color: #f0f4f8;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
-.review-card button:hover {
-  background-color: #1c3739;
+/* Imagen del review estándar */
+.review-card img {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  align-self: center;
+}
+
+/* Ratings dentro del review en 2 columnas */
+.review-card .ratings-card {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 12px;
+  margin-top: 8px;
+}
+
+.review-card .ratings-card span {
+  color: gold;
+}
+
+.review-card .ratings-card span.inactive {
+  color: lightgray;
+}
+
+/* Botones dentro del card */
+.review-card .like-btn,
+.review-card .favourite-btn,
+.review-card .edit-btn,
+.review-card .delete-btn {
+  background-color: #1c3739; /* verde del navbar */
   color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.review-card .like-btn:hover,
+.review-card .favourite-btn:hover,
+.review-card .edit-btn:hover,
+.review-card .delete-btn:hover {
+  background-color: #0f2a2b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .reviews-list {
+    grid-template-columns: 1fr;
+  }
+  .review-card img {
+    width: 100%;
+    height: auto;
+  }
 }
